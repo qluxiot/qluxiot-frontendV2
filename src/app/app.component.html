@@ -1,0 +1,285 @@
+<ion-app>
+  <ion-split-pane contentId="main" [when]="'md'">
+    <!-- Sidebar Menu - only shown when logged in -->
+    <ion-menu contentId="main" type="overlay" *ngIf="isLoggedIn$ | async">
+      <ion-content class="sidebar-content">
+
+        <!-- Header: greeting + username -->
+        <div class="sidebar-header" [class.mbs-admin-bg]="isMbsAdmin">
+          <h3 class="greeting-text">{{ welcomeText }}</h3>
+          <p class="user-name">{{ (name$ | async) || (username$ | async) }}</p>
+        </div>
+
+        <!-- Flex body: nav grows, logout sticks to bottom -->
+        <div class="menu-body">
+          <ion-list class="menu-list" lines="none">
+            <!-- Home link -->
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/home" routerLinkActive="active-item" [routerLinkActiveOptions]="{ exact: true }"
+                class="menu-item" button>
+                <ion-icon slot="start" name="location-outline" class="menu-icon"></ion-icon>
+                <ion-label class="menu-label">Location Overview</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+
+            <!-- Smart Solution Accordion -->
+            <ion-accordion-group class="sidebar-accordion-group"
+              *ngIf="hasAnyPermission(['SMART_LED_STREETLIGHT.LISTING', 'SMART_SOLAR.LISTING', 'SMART_CITY_POLE.LISTING', 'UC100_SOLAR.LISTING'])">
+              <ion-accordion value="smart-solution" class="sidebar-accordion">
+                <ion-item slot="header" class="menu-item header-item" lines="none">
+                  <ion-icon slot="start" name="bulb-outline" class="menu-icon"></ion-icon>
+                  <ion-label class="menu-label">Smart Streetlight</ion-label>
+                </ion-item>
+
+                <div slot="content" class="submenu-container">
+
+                  <!-- Smart LED Streetlight -->
+                  <ion-accordion-group *ngIf="hasPermission('SMART_LED_STREETLIGHT.LISTING')">
+                    <ion-accordion value="smart-led" style="background: transparent;">
+                      <ion-item slot="header" class="submodule-item" lines="none">
+                        <span class="bullet">•</span>
+                        <ion-label>LED Streetlight</ion-label>
+                      </ion-item>
+                      <div slot="content" style="padding-left: 20px;">
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-led/dashboard" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Overview</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                          <ion-item routerLink="/smart-led/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Device Registration</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-led/monitoring" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Real-time Monitoring</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-led/history" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>History</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-led/alarms" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Alarms</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                      </div>
+                    </ion-accordion>
+                  </ion-accordion-group>
+
+                  <!-- Smart Solar -->
+                  <ion-accordion-group *ngIf="hasPermission('SMART_SOLAR.LISTING') && !isJkrShAdmin">
+                    <ion-accordion value="smart-solar" style="background: transparent;">
+                      <ion-item slot="header" class="submodule-item" lines="none">
+                        <span class="bullet">•</span>
+                        <ion-label>Solar Streetlight</ion-label>
+                      </ion-item>
+                      <div slot="content" style="padding-left: 20px;">
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-solar/dashboard" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Overview</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                          <ion-item routerLink="/smart-solar/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Device Registration</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-solar/monitoring" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Real-time Monitoring</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-solar/history" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>History</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/smart-solar/alarms" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Alarms</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                      </div>
+                    </ion-accordion>
+                  </ion-accordion-group>
+
+                  <!-- UC100 Solar (HiveMQ / Isurian) -->
+                  <ion-accordion-group *ngIf="hasPermission('UC100_SOLAR.LISTING') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                    <ion-accordion value="uc100" style="background: transparent;">
+                      <ion-item slot="header" class="submodule-item" lines="none">
+                        <span class="bullet">•</span>
+                        <ion-label>UC100 Solar</ion-label>
+                      </ion-item>
+                      <div slot="content" style="padding-left: 20px;">
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/uc100/dashboard" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Overview</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/uc100/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Device Registration</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/uc100/monitoring" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>Real-time Monitoring</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                        <ion-menu-toggle auto-hide="false">
+                          <ion-item routerLink="/uc100/history" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                            <span class="bullet">-</span>
+                            <ion-label>History</ion-label>
+                          </ion-item>
+                        </ion-menu-toggle>
+                      </div>
+                    </ion-accordion>
+                  </ion-accordion-group>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+
+            <!-- Bertam Standalone Menu -->
+            <ion-accordion-group class="sidebar-accordion-group" *ngIf="isBertamEnabled">
+              <ion-accordion value="bertam-solution" class="sidebar-accordion">
+                <ion-item slot="header" class="menu-item header-item" lines="none">
+                  <ion-icon slot="start" name="flash-outline" class="menu-icon"></ion-icon>
+                  <ion-label class="menu-label">Bertam</ion-label>
+                </ion-item>
+                <div slot="content" class="submenu-container">
+                  <ion-menu-toggle auto-hide="false">
+                    <ion-item routerLink="/bertam/dashboard" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Overview</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                  <ion-menu-toggle auto-hide="false">
+                    <ion-item routerLink="/bertam/monitoring" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Real-time Monitoring</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                  <ion-menu-toggle auto-hide="false">
+                    <ion-item routerLink="/bertam/history" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>History</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+
+            <!-- Alarms & Notifications Accordion -->
+            <ion-accordion-group class="sidebar-accordion-group"
+              *ngIf="hasAnyPermission(['NOTIFICATION_SETUP.LISTING', 'NOTIFICATION_SETUP.CREATE', 'NOTIFICATION_SETUP.DELETE', 'NOTIFICATION_SETUP.WHATSAPP_MANAGE'])">
+              <ion-accordion value="alarms" class="sidebar-accordion">
+                <ion-item slot="header" class="menu-item header-item" lines="none">
+                  <ion-icon slot="start" name="notifications-outline" class="menu-icon"></ion-icon>
+                  <ion-label class="menu-label">Notifications</ion-label>
+                </ion-item>
+
+                <div slot="content" class="submenu-container">
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasAnyPermission(['NOTIFICATION_SETUP.LISTING', 'NOTIFICATION_SETUP.CREATE', 'NOTIFICATION_SETUP.DELETE'])">
+                    <ion-item routerLink="/notification-settings" routerLinkActive="active-submodule"
+                      [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Alarms Notification</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('NOTIFICATION_SETUP.WHATSAPP_MANAGE') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                    <ion-item routerLink="/notification-settings/whatsapp-setup" routerLinkActive="active-submodule"
+                      [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>WhatsApp Server</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+
+            <!-- User Accordion -->
+            <ion-accordion-group class="sidebar-accordion-group"
+              *ngIf="hasAnyPermission(['USER_MANAGEMENT.LISTING', 'ROLE_MANAGEMENT.LISTING', 'ROLE_PERMISSION.LISTING']) && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+              <ion-accordion value="user" class="sidebar-accordion">
+                <ion-item slot="header" class="menu-item header-item" lines="none">
+                  <ion-icon slot="start" name="people-outline" class="menu-icon"></ion-icon>
+                  <ion-label class="menu-label">Users</ion-label>
+                </ion-item>
+
+                <div slot="content" class="submenu-container">
+                  <!-- User -->
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('USER_MANAGEMENT.LISTING')">
+                    <ion-item routerLink="/user-management" routerLinkActive="active-submodule"
+                      [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>User</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+
+                  <!-- Project -->
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('USER_MANAGEMENT.LISTING')">
+                    <ion-item routerLink="/project-management" routerLinkActive="active-submodule"
+                      [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Project</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+
+                  <!-- Roles -->
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('ROLE_MANAGEMENT.LISTING')">
+                    <ion-item routerLink="/role-management" routerLinkActive="active-submodule"
+                      [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Roles</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+
+                  <!-- Role Permission -->
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('ROLE_PERMISSION.LISTING')">
+                    <ion-item routerLink="/role-permission" routerLinkActive="active-submodule"
+                      [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Role Permission</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+          </ion-list>
+
+          <!-- Logout pinned at bottom -->
+          <div class="sidebar-footer">
+            <ion-item button (click)="logout()" class="logout-item" lines="none">
+              <ion-icon slot="start" name="log-out-outline" class="logout-icon"></ion-icon>
+              <ion-label class="logout-label">Sign Out</ion-label>
+            </ion-item>
+          </div>
+        </div>
+
+      </ion-content>
+    </ion-menu>
+
+    <!-- Main Content -->
+    <div class="ion-page" id="main">
+      <ion-router-outlet></ion-router-outlet>
+    </div>
+  </ion-split-pane>
+</ion-app>

@@ -1,0 +1,196 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="registry-content ion-padding">
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">Device Registration</h1>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <div *ngIf="isAdmin && projects.length > 0" class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+        <span class="text-body-md font-body-md text-secondary">Filter by Project:</span>
+        <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()" class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer">
+          <option [ngValue]="null">All Projects</option>
+          <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+      <div *ngIf="isAdmin && projects.length > 0" class="h-8 w-[1px] bg-outline-variant mx-sm"></div>
+      <div class="flex-1 relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[20px]">search</span>
+        <input [(ngModel)]="searchTerm" (input)="filterDevices()" class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-body-md placeholder:text-outline" placeholder="Search device EUI or name..." type="text"/>
+      </div>
+      <div class="flex items-center gap-sm px-md">
+        <span class="text-headline-md font-headline-md text-primary">{{ filteredDevices.length }}</span>
+        <span class="text-label-md font-label-md text-secondary uppercase tracking-tighter">devices shown</span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Device Name</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Serial Number</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Coordinates</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Status</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Assigned Project</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Registered Date</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            <tr *ngFor="let d of paginatedDevices" class="hover:bg-surface-container-low/50 transition-colors">
+              <td class="px-lg py-md font-bold text-on-surface text-body-md">{{ d.name || 'Unnamed device' }}</td>
+              <td class="px-lg py-md font-mono text-secondary text-body-md">{{ d.dev_eui }}</td>
+              <td class="px-lg py-md text-body-md">
+                <a *ngIf="d.latitude && d.longitude" 
+                   [href]="'https://maps.google.com/?q=' + d.latitude + ',' + d.longitude" 
+                   target="_blank" 
+                   class="flex items-center gap-1 text-primary hover:underline hover:text-primary/80 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">location_on</span>
+                  {{ d.latitude | number:'1.4-4' }}, {{ d.longitude | number:'1.4-4' }}
+                </a>
+                <span *ngIf="!d.latitude || !d.longitude" class="italic text-outline">Not set</span>
+              </td>
+              <td class="px-lg py-md">
+                <div class="flex items-center gap-sm">
+                  <span class="w-2 h-2 rounded-full" [class.bg-tertiary-fixed-dim]="d.status === 'Active'" [class.bg-outline]="d.status !== 'Active'"></span>
+                  <span class="px-2 py-0.5 rounded text-label-sm font-semibold"
+                    [class.bg-tertiary-fixed-dim]="d.status === 'Active'" [class.text-tertiary]="d.status === 'Active'" [class.bg-opacity-20]="d.status === 'Active'"
+                    [class.bg-surface-container-high]="d.status !== 'Active'" [class.text-secondary]="d.status !== 'Active'">
+                    {{ d.status === 'Active' ? 'Enabled' : (d.status === 'Inactive' ? 'Disabled' : d.status) }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-lg py-md text-body-md" [class.italic]="!d.project" [class.text-outline]="!d.project">
+                {{ d.project?.name || 'Unassigned' }}
+              </td>
+              <td class="px-lg py-md text-body-md text-on-surface-variant">{{ formatDate(d.created_datetime) }}</td>
+              <td class="px-lg py-md text-right">
+                <button (click)="openEditModal(d)" class="text-secondary hover:text-primary transition-all p-1 rounded hover:bg-surface-variant">
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedDevices.length === 0">
+              <td colspan="7" class="px-lg py-xl text-center text-secondary text-body-md">No UC100 devices found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-surface-container-low px-lg py-md border-t border-outline-variant flex items-center justify-between">
+        <div class="flex items-center gap-md">
+          <p class="text-label-md font-label-md text-secondary uppercase">Page {{ currentPage }} of {{ totalPages }}</p>
+          <div class="flex items-center gap-sm">
+            <span class="text-label-md font-label-md text-secondary">Rows per page:</span>
+            <select [ngModel]="pageSize" (change)="changePageSize($event)" class="text-label-md font-label-md text-on-surface bg-transparent border border-outline-variant rounded py-1 pl-2 pr-6 cursor-pointer focus:ring-0 focus:border-primary">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-sm">
+          <button (click)="prevPage()" [disabled]="currentPage === 1" class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center" [class.text-outline]="currentPage === 1" [class.cursor-not-allowed]="currentPage === 1">
+            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+          </button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center" [class.text-outline]="currentPage === totalPages" [class.cursor-not-allowed]="currentPage === totalPages">
+            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Edit Modal -->
+  <ion-modal #deviceModal class="project-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Edit UC100 Device</ion-title>
+          <ion-buttons slot="end">
+            <ion-button aria-label="Close modal" (click)="closeModal()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <div class="form-container" style="padding: 20px;">
+
+          <!-- Identity (frozen) -->
+          <h3 class="section-title" style="margin-top: 0; color: #2563eb; font-size: 15px; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 14px;">Device Identity (Read-only)</h3>
+          <p style="color: #64748b; font-size: 0.85em; margin-bottom: 14px;">These fields are auto-assigned by the network and cannot be changed.</p>
+          <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Dev EUI</label>
+              <input type="text" [value]="currentDevice.dev_eui" disabled class="custom-input" style="background: #f1f5f9; cursor: not-allowed; width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Display Name</label>
+              <input type="text" [(ngModel)]="currentDevice.name" placeholder="e.g. Streetlight 01" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9em;">
+            </div>
+          </div>
+
+          <!-- Location -->
+          <h3 class="section-title" style="color: #2563eb; font-size: 15px; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin: 20px 0 8px;">Coordinates</h3>
+          <p style="color: #64748b; font-size: 0.85em; margin-bottom: 14px;">Set the latitude and longitude to display the device on the dashboard map.</p>
+          <div style="margin-bottom: 10px;">
+            <ion-button fill="outline" size="small" (click)="getCurrentLocation()">
+              <ion-icon slot="start" name="location-outline"></ion-icon>
+              Use My Current Location
+            </ion-button>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Latitude</label>
+              <input type="number" [(ngModel)]="currentDevice.latitude" placeholder="e.g. 3.1415" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9em;">
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Longitude</label>
+              <input type="number" [(ngModel)]="currentDevice.longitude" placeholder="e.g. 101.6865" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9em;">
+            </div>
+          </div>
+
+          <!-- Status -->
+          <h3 class="section-title" style="color: #2563eb; font-size: 15px; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin: 20px 0 8px;">Status</h3>
+          <select [(ngModel)]="currentDevice.status" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9em; margin-bottom: 12px;">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Faulty">Faulty</option>
+          </select>
+
+          <!-- Project Assignment -->
+          <h3 class="section-title" style="color: #2563eb; font-size: 15px; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin: 20px 0 8px;">Project Assignment</h3>
+          <select [(ngModel)]="currentDevice.projectId" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9em; margin-bottom: 20px;">
+            <option [ngValue]="null">-- No Project --</option>
+            <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+
+        </div>
+      </ion-content>
+      <ion-footer class="ion-no-border">
+        <ion-toolbar style="--background: #ffffff; border-top: 1px solid #e2e8f0;">
+          <div style="display: flex; gap: 10px; justify-content: flex-end; padding: 12px 16px;">
+            <button (click)="closeModal()" style="padding: 10px 20px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 14px; color: #64748b;">Cancel</button>
+            <button (click)="saveDevice()" [disabled]="isSaving" style="padding: 10px 20px; border-radius: 8px; background: #2563eb; color: white; border: none; cursor: pointer; font-size: 14px; font-weight: 600;" [style.opacity]="isSaving ? '0.7' : '1'">
+              <ion-icon name="save-outline" style="vertical-align: middle; margin-right: 6px;"></ion-icon>
+              {{ isSaving ? 'Saving...' : 'Save Device' }}
+            </button>
+          </div>
+        </ion-toolbar>
+      </ion-footer>
+    </ng-template>
+  </ion-modal>
+</ion-content>

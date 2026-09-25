@@ -1,0 +1,33 @@
+.custom-header {
+  border-bottom: 1px solid #1b2b3a;
+}
+
+.custom-toolbar {
+  --background: url('../../../assets/QLUX-smart-pole-header.png') no-repeat center center / cover;
+  // --background: #1B2B3A;
+  --color: #ffffff;
+  --min-height: 100px; 
+  padding: 0.2rem 0.5rem;
+}
+
+.menu-btn {
+  --color: #ffffff;
+}
+
+.header-logo-container {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.header-logo {
+  max-height: 50px;
+  width: auto;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .custom-toolbar {
+    --background: url('../../../assets/mobile_header_bg.png') no-repeat center center / cover;
+  }
+}

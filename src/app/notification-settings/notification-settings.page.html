@@ -1,0 +1,235 @@
+<app-custom-header title="Notification Channels"></app-custom-header>
+
+<ion-content>
+  <div class="main-content">
+    <div class="max-w-container">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="header-text">
+          <h1>Alarms Notification</h1>
+          <!-- <p>Manage where Qlux sends warnings and alerts. Add WhatsApp or Email targets to your projects for real-time
+            monitoring.</p> -->
+          <p class="project-hint" *ngIf="!isSuperAdmin && userProjectName"
+            style="color: var(--c-primary); font-size: 14px; margin-top: 4px;">
+            Showing channels for project: <strong>{{ userProjectName }}</strong>
+          </p>
+        </div>
+        <div>
+          <!-- <button class="btn-add" (click)="openModal()" *ngIf="hasPermission('NOTIFICATION_SETUP.CREATE')">
+            <ion-icon name="add-outline"></ion-icon>
+            ADD CHANNEL
+          </button> -->
+        </div>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="filters-section" *ngIf="isSuperAdmin">
+        <div class="filter-select-wrapper">
+          <ion-icon name="filter-outline" class="icon-left"></ion-icon>
+          <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()">
+            <option [ngValue]="null">All Projects</option>
+            <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+          <ion-icon name="chevron-down-outline" class="icon-right"></ion-icon>
+        </div>
+
+        <div class="spacer"></div>
+
+        <!-- <div class="view-toggles">
+          <button class="active">
+            <ion-icon name="grid-outline"></ion-icon> Grid
+          </button>
+          <button>
+            <ion-icon name="list-outline"></ion-icon> List
+          </button>
+        </div> -->
+      </div>
+
+      <!-- Channels Grid (Bento Pattern) -->
+      <div class="bento-grid">
+
+        <!-- Generated Cards -->
+        <div class="bento-card" [class.inactive]="!channel.is_active" *ngFor="let channel of channels">
+          <div class="card-header">
+            <h3>{{ channel.name }}</h3>
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="channel.is_active" (change)="toggleActive(channel)">
+              <div class="slider"></div>
+            </label>
+          </div>
+
+          <div class="card-badges">
+            <span class="badge" [ngClass]="channel.channel_type === 'email' ? 'type-email' : 'type-whatsapp'">
+              <ion-icon [name]="channel.channel_type === 'email' ? 'mail-outline' : 'logo-whatsapp'"></ion-icon>
+              {{ channel.channel_type }}
+            </span>
+            <span class="badge" [ngClass]="channel.is_verified ? 'status-verified' : 'status-pending'">
+              <ion-icon [name]="channel.is_verified ? 'checkmark-circle-outline' : 'time-outline'"></ion-icon>
+              {{ channel.is_verified ? 'VERIFIED' : 'PENDING' }}
+            </span>
+          </div>
+
+          <div class="card-body">
+            <div class="destination">
+              <label>DESTINATION:</label>
+              <div class="dest-value">
+                {{ channel.channel_address }}
+              </div>
+            </div>
+            <div class="project-info">
+              <span>Project: <strong>{{ getProjectName(channel.project_id) }}</strong></span>
+              <span class="status-indicator">
+                <span class="dot" [class.active]="channel.is_active"></span> Active
+              </span>
+            </div>
+          </div>
+
+          <div class="card-footer" *ngIf="hasPermission('NOTIFICATION_SETUP.DELETE')">
+            <button class="btn-delete" (click)="deleteChannel(channel.id)">
+              <ion-icon name="trash-outline"></ion-icon>
+              DELETE
+            </button>
+          </div>
+        </div>
+
+        <!-- Add New Channel Placeholder -->
+        <button class="add-placeholder" (click)="openModal()" *ngIf="hasPermission('NOTIFICATION_SETUP.CREATE')">
+          <div class="icon-circle">
+            <ion-icon name="add-outline"></ion-icon>
+          </div>
+          <div class="text-content">
+            <h4>Connect New Target</h4>
+            <p>Add another endpoint for system alerts</p>
+          </div>
+        </button>
+
+      </div>
+
+      <!-- Stats/Footer Info Section -->
+      <!-- <div class="stats-section">
+        <div class="stat-card">
+          <div class="icon-wrapper bg-primary-light">
+            <ion-icon name="analytics-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <p>ACTIVE CHANNELS</p>
+            <h4>{{ channels.length > 9 ? channels.length : '0' + channels.length }}</h4>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="icon-wrapper bg-secondary-light">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <p>VERIFICATION RATE</p>
+            <h4>
+              {{ getVerificationRate() }}%
+            </h4>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="icon-wrapper bg-tertiary-light">
+            <ion-icon name="notifications-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <p>ALERTS SENT (24H)</p>
+            <h4>--</h4>
+          </div>
+        </div>
+      </div> -->
+
+    </div>
+  </div>
+</ion-content>
+
+<!-- Custom Add Channel Modal -->
+<ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()" class="transparent-modal">
+  <ng-template>
+    <ion-content class="transparent-content">
+      <div class="custom-modal-backdrop-inner">
+        <div class="custom-modal">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h1>Register New Channel</h1>
+            <button class="close-btn" (click)="closeModal()">
+              <ion-icon name="close"></ion-icon>
+            </button>
+          </div>
+          
+          <!-- Info Box -->
+          <div class="info-box">
+            <ion-icon name="information-circle"></ion-icon>
+            <p>After saving, a verification link will be sent to your number or email. Click it to activate the channel.</p>
+          </div>
+
+          <!-- Registration Form -->
+          <form class="registration-form" (ngSubmit)="addChannel()">
+            
+            <!-- Channel Name -->
+            <div class="form-group">
+              <label>Channel Name</label>
+              <div class="input-wrapper">
+                <input type="text" [(ngModel)]="newChannel.name" name="name" placeholder="e.g. JKR Labuan">
+              </div>
+            </div>
+
+            <!-- Assign to Project & Channel Type (Asymmetric Row) -->
+            <div class="form-row" [class.single-col]="!isSuperAdmin">
+              
+              <div class="form-group" *ngIf="isSuperAdmin">
+                <label>Assign to Project</label>
+                <div class="select-wrapper">
+                  <select [(ngModel)]="newChannel.project_id" name="project_id">
+                    <option [ngValue]="null">No Project (Global)</option>
+                    <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+                  </select>
+                  <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Channel Type</label>
+                <div class="select-wrapper has-icon">
+                  <ion-icon [name]="newChannel.channel_type === 'whatsapp' ? 'logo-whatsapp' : 'mail-outline'"
+                    class="prefix-icon" [class.whatsapp-color]="newChannel.channel_type === 'whatsapp'"></ion-icon>
+                  <select [(ngModel)]="newChannel.channel_type" name="channel_type">
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">Email</option>
+                  </select>
+                  <ion-icon name="chevron-down-outline" class="select-icon"></ion-icon>
+                </div>
+              </div>
+              
+            </div>
+
+            <!-- WhatsApp Number / Email -->
+            <div class="form-group">
+              <label>{{ channelAddressLabel }}</label>
+              <div class="input-wrapper has-icon">
+                <ion-icon [name]="newChannel.channel_type === 'whatsapp' ? 'phone-portrait-outline' : 'mail-outline'"
+                  class="prefix-icon"></ion-icon>
+                <input type="text" [(ngModel)]="newChannel.channel_address" name="channel_address"
+                  [placeholder]="channelAddressPlaceholder">
+              </div>
+            </div>
+
+            <!-- Action Footer -->
+            <div class="form-actions">
+              <button type="submit" class="btn-save" [disabled]="!newChannel.name || !newChannel.channel_address || isSaving">
+                <ion-icon name="save"></ion-icon>
+                {{ isSaving ? 'SAVING...' : 'SAVE & SEND VERIFICATION' }}
+              </button>
+              <button type="button" class="btn-cancel" (click)="closeModal()">
+                CANCEL
+              </button>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

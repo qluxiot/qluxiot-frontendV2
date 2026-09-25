@@ -1,0 +1,101 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="fetchHistory()">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Header -->
+    <div class="mb-xl">
+      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">UC100 History</h1>
+      
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <!-- Device Selector -->
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-secondary text-[20px]">solar_power</span>
+        <select [(ngModel)]="selectedDevEui" (ngModelChange)="fetchHistory()"
+          class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer outline-none">
+          <option *ngFor="let d of devices" [value]="d.dev_eui">{{ d.name || d.dev_eui }}</option>
+        </select>
+      </div>
+      <!-- Date Picker -->
+      <div class="flex items-center gap-1">
+        <button (click)="previousDate()" class="flex items-center justify-center p-2 rounded hover:bg-surface-variant transition-colors text-secondary hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+        </button>
+        <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-secondary text-[20px]">calendar_today</span>
+          <input type="date" [(ngModel)]="selectedDate" (change)="fetchHistory()"
+            class="text-body-md font-body-md text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer outline-none" />
+        </div>
+        <button (click)="nextDate()" class="flex items-center justify-center p-2 rounded hover:bg-surface-variant transition-colors text-secondary hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+        </button>
+      </div>
+      <!-- Record Count -->
+      <!-- <div class="flex items-center gap-sm px-md">
+        <span class="text-headline-md font-headline-md text-amber-500">{{ historyRecords.length }}</span>
+        <span class="text-label-md font-label-md text-secondary uppercase tracking-tighter">records</span>
+      </div> -->
+      <button (click)="fetchHistory()" [disabled]="isLoadingHistory"
+        class="flex items-center gap-sm px-md py-2 bg-primary text-white hover:bg-primary/90 rounded-lg transition-colors text-label-md font-label-md shadow-sm disabled:opacity-50">
+        <span class="material-symbols-outlined text-[18px]" [class.animate-spin]="isLoadingHistory">{{ isLoadingHistory ? 'progress_activity' : 'refresh' }}</span>
+        Load
+      </button>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm flex flex-col mb-xl" *ngIf="!isLoadingHistory">
+      <h3 class="text-title-md font-title-md text-on-surface mb-md">Real Time Graph</h3>
+      <div class="flex-1 min-h-[400px]">
+        <canvas #telemetryChart></canvas>
+      </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-x-auto">
+      <table class="w-full text-left border-collapse min-w-[800px]">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant text-label-sm font-label-sm text-secondary uppercase tracking-wider">
+            <th class="p-4 font-semibold">Time</th>
+            <th class="p-4 font-semibold">Battery %</th>
+            <th class="p-4 font-semibold">Battery V</th>
+            <th class="p-4 font-semibold">Solar V</th>
+            <th class="p-4 font-semibold">LED Status</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-md font-body-md">
+          <tr *ngFor="let record of historyRecords" class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
+            <td class="p-4">{{ formatTimestamp(record.timestamp) }}</td>
+            <td class="p-4" [ngClass]="{'text-error': record.battery_percent < 20}">{{ record.battery_percent != null ? (record.battery_percent | number:'1.0-1') + '%' : '--' }}</td>
+            <td class="p-4">{{ record.battery_voltage != null ? (record.battery_voltage | number:'1.1-2') + 'V' : '--V' }}</td>
+            <td class="p-4">{{ record.solar_panel_voltage != null ? (record.solar_panel_voltage | number:'1.1-2') + 'V' : '--V' }}</td>
+            <td class="p-4" [ngClass]="record.led_status > 0 ? 'text-primary' : 'text-secondary'">
+              {{ record.led_status > 0 ? 'ON' : 'OFF' }}
+            </td>
+          </tr>
+
+          <tr *ngIf="isLoadingHistory">
+            <td colspan="6" class="p-8 text-center text-secondary">
+              <span class="material-symbols-outlined text-[36px] animate-spin text-primary block mb-sm">progress_activity</span>
+              Loading history...
+            </td>
+          </tr>
+
+          <tr *ngIf="!isLoadingHistory && historyRecords.length === 0">
+            <td colspan="6" class="p-8 text-center text-secondary">
+              <span class="material-symbols-outlined text-[48px] text-outline block mb-sm">history</span>
+              No historical data found for the selected date.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</ion-content>

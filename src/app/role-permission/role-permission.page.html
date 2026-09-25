@@ -1,0 +1,120 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="user-container">
+    <!-- <div class="breadcrumb-header">
+      <span class="parent-path">User</span>
+      <span class="separator">/</span>
+      <span class="parent-path">Role Permission</span>
+      <span class="separator">/</span>
+      <span class="current-path">Role Permission</span>
+    </div> -->
+
+    <div class="criteria-card">
+      <h2 class="section-title">Role Permission</h2>
+      <div class="criteria-grid">
+        <div class="field-group">
+          <label>Filter Role</label>
+          <select class="custom-select" [(ngModel)]="searchRole" (ngModelChange)="onSearch()">
+            <option [ngValue]="null">Select Role</option>
+            <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Search Keyword</label>
+          <input type="text" class="custom-input" placeholder="Search by keyword" [(ngModel)]="searchPermission" (ngModelChange)="onSearch()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-operations">
+        <div class="operations-left">
+          <span class="total-count">Module Access Settings (Select permissions per module)</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Module Name</th>
+              <th style="text-align: center;">See Menu (View)</th>
+              <th style="text-align: center;">Create</th>
+              <th style="text-align: center;">Edit (Update)</th>
+              <th style="text-align: center;">Delete</th>
+              <th style="text-align: center; width: 120px;">Bulk Toggle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mod of filteredModules()">
+              <td class="bold-text">{{ mod.name }}</td>
+              
+              <!-- See Menu (Listing / View) -->
+              <td style="text-align: center;">
+                <ng-container *ngIf="getPermissionCode(mod.key, 'LISTING') || getPermissionCode(mod.key, 'VIEW') as code">
+                  <input type="checkbox" 
+                         [checked]="isPermissionChecked(code)" 
+                         (change)="togglePermission(code, $event.target.checked)" 
+                         [disabled]="!searchRole" />
+                </ng-container>
+                <span *ngIf="!getPermissionCode(mod.key, 'LISTING') && !getPermissionCode(mod.key, 'VIEW')">-</span>
+              </td>
+
+              <!-- Create -->
+              <td style="text-align: center;">
+                <ng-container *ngIf="getPermissionCode(mod.key, 'CREATE') as code">
+                  <input type="checkbox" 
+                         [checked]="isPermissionChecked(code)" 
+                         (change)="togglePermission(code, $event.target.checked)" 
+                         [disabled]="!searchRole" />
+                </ng-container>
+                <span *ngIf="!getPermissionCode(mod.key, 'CREATE')">-</span>
+              </td>
+
+              <!-- Edit (Update) -->
+              <td style="text-align: center;">
+                <ng-container *ngIf="getPermissionCode(mod.key, 'UPDATE') as code">
+                  <input type="checkbox" 
+                         [checked]="isPermissionChecked(code)" 
+                         (change)="togglePermission(code, $event.target.checked)" 
+                         [disabled]="!searchRole" />
+                </ng-container>
+                <span *ngIf="!getPermissionCode(mod.key, 'UPDATE')">-</span>
+              </td>
+
+              <!-- Delete -->
+              <td style="text-align: center;">
+                <ng-container *ngIf="getPermissionCode(mod.key, 'DELETE') as code">
+                  <input type="checkbox" 
+                         [checked]="isPermissionChecked(code)" 
+                         (change)="togglePermission(code, $event.target.checked)" 
+                         [disabled]="!searchRole" />
+                </ng-container>
+                <span *ngIf="!getPermissionCode(mod.key, 'DELETE')">-</span>
+              </td>
+
+              <!-- Grant/Revoke All -->
+              <td style="text-align: center;">
+                <button class="op-btn" 
+                        style="height: 28px; padding: 0 0.5rem; font-size: 0.75rem;" 
+                        [disabled]="!searchRole" 
+                        (click)="toggleAllForModule(mod.key)">
+                  {{ isAllModuleChecked(mod.key) ? 'Revoke All' : 'Grant All' }}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredModules().length === 0">
+              <td colspan="6" style="text-align: center; padding: 20px;">No modules found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="permission-actions" style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.75rem;">
+        <button class="modal-btn cancel-btn" (click)="cancelAssignedChanges()" [disabled]="!isDirty">Cancel</button>
+        <button class="modal-btn save-btn" (click)="saveAssignedRolePermissions()" [disabled]="!isDirty || !searchRole">Save</button>
+      </div>
+    </div>
+  </div>
+</ion-content>

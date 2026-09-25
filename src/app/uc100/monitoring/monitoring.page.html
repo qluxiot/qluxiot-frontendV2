@@ -1,0 +1,332 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="fetchData($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Header Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">UC100 Real-time Monitoring</h1>
+        
+      </div>
+    </div>
+
+    <!-- Bulk Action Bar (shows when devices selected) -->
+    <div *ngIf="selectedDevEuis.size > 0"
+         class="mb-md p-md rounded-lg border border-primary/30 bg-primary/5 flex flex-wrap items-center gap-sm justify-between">
+      <div class="flex items-center gap-sm">
+        <span class="material-symbols-outlined text-primary text-[20px]">check_box</span>
+        <span class="text-body-md font-semibold text-on-surface">
+          {{ selectedDevEuis.size }} device{{ selectedDevEuis.size > 1 ? 's' : '' }} selected
+        </span>
+      </div>
+      <div class="flex items-center gap-sm">
+        <button (click)="openTimerModal()"
+          class="flex items-center gap-2 px-md py-2 bg-primary text-white rounded-lg text-body-md font-semibold hover:bg-primary/90 transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">timer</span>
+          Set Timer &amp; Dimming
+        </button>
+        <button (click)="clearSelection()"
+          class="px-md py-2 border border-outline-variant rounded-lg text-secondary text-body-md hover:bg-surface-container-low transition-colors">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <div class="flex-1 relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[20px]">search</span>
+        <input [(ngModel)]="searchQuery" (input)="applyFilter()"
+          class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-body-md placeholder:text-outline"
+          placeholder="Search by name or device EUI..." type="text" />
+      </div>
+      <div class="flex items-center gap-sm px-md">
+        <span class="text-headline-md font-headline-md text-primary">{{ filteredDevices.length }}</span>
+        <span class="text-label-md font-label-md text-secondary uppercase tracking-tighter">devices</span>
+      </div>
+      <button (click)="fetchData()" [disabled]="isLoading"
+        class="flex items-center gap-sm px-md py-2 bg-primary text-white hover:bg-primary/90 rounded-lg transition-colors text-label-md font-label-md shadow-sm disabled:opacity-50">
+        <span class="material-symbols-outlined text-[18px]" [class.animate-spin]="isLoading">{{ isLoading ? 'progress_activity' : 'refresh' }}</span>
+        {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <!-- Device Table + Control Panel Side-by-Side -->
+    <div class="flex gap-lg" [class.flex-col]="!showControlPanel">
+
+      <!-- Device Table -->
+      <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm flex-1">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container-low border-b border-outline-variant">
+                <th class="px-md py-md w-10">
+                  <input type="checkbox" [checked]="allPageSelected" (change)="toggleSelectAll()"
+                    class="w-4 h-4 rounded border-outline-variant accent-primary cursor-pointer">
+                </th>
+                <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Device</th>
+                <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Battery</th>
+                <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Temp</th>
+                <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Solar</th>
+                <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">LED Status</th>
+                <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-right">Last Updated</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+              <tr *ngFor="let device of filteredDevices"
+                (click)="openControlPanel(device)"
+                class="hover:bg-primary/5 transition-colors cursor-pointer"
+                [class.bg-primary/5]="selectedDevEuis.has(device.dev_eui)"
+                [class.border-l-4]="selectedDevice?.dev_eui === device.dev_eui"
+                [class.border-primary]="selectedDevice?.dev_eui === device.dev_eui">
+
+                <!-- Checkbox -->
+                <td class="px-md py-md" (click)="$event.stopPropagation()">
+                  <input type="checkbox" [checked]="selectedDevEuis.has(device.dev_eui)" (change)="toggleSelect(device.dev_eui, $event)"
+                    class="w-4 h-4 rounded border-outline-variant accent-primary cursor-pointer">
+                </td>
+
+                <td class="px-lg py-md">
+                  <div class="flex items-center gap-sm">
+                    <span class="w-2 h-2 rounded-full flex-shrink-0 mt-0.5"
+                      [ngClass]="device.is_online ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></span>
+                    <div>
+                      <div class="font-bold text-on-surface text-body-lg">{{ device.name || device.dev_eui }}</div>
+                      <div class="font-mono text-secondary text-label-sm">{{ device.dev_eui }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="px-lg py-md">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                    <span class="material-symbols-outlined text-[16px]"
+                      [style.color]="device.battery_percent > 20 ? '#2dd36f' : '#eb445a'">battery_horiz_050</span>
+                    {{ device.battery_percent != null ? (device.battery_percent | number:'1.2-2') + '%' : 'N/A' }}
+                  </span>
+                  <div class="text-body-sm text-secondary mt-1">{{ device.battery_voltage != null ? (device.battery_voltage | number:'1.2-2') + 'V' : '--V' }}</div>
+                </td>
+
+                <td class="px-lg py-md">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                    <span class="material-symbols-outlined text-[16px] text-error">thermostat</span>
+                    {{ device.battery_temp != null ? (device.battery_temp | number:'1.2-2') + '°C' : '--°C' }}
+                  </span>
+                </td>
+
+                <td class="px-lg py-md">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                    <span class="material-symbols-outlined text-[16px] text-warning">light_mode</span>
+                    {{ device.solar_panel_voltage != null ? (device.solar_panel_voltage | number:'1.2-2') + 'V' : '--V' }}
+                  </span>
+                  <div class="text-body-sm text-secondary mt-1">{{ device.solar_current != null ? (device.solar_current | number:'1.2-2') + 'mA' : '--mA' }}</div>
+                </td>
+
+                <td class="px-lg py-md">
+                  <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-sm">
+                      <span class="w-2 h-2 rounded-full"
+                        [ngClass]="device.led_status > 0 ? 'bg-primary' : 'bg-gray-300'"></span>
+                      <span class="px-2 py-0.5 rounded text-label-sm font-semibold"
+                        [ngClass]="device.led_status > 0 ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'">
+                        {{ device.led_status > 0 ? 'ON' : 'OFF' }}
+                      </span>
+                    </div>
+                    <div class="text-label-sm text-secondary" *ngIf="device.brightness_setting != null">
+                      Set: {{ device.brightness_setting }}%
+                    </div>
+                  </div>
+                </td>
+
+                <td class="px-lg py-md text-body-md text-on-surface-variant text-right">
+                  <span *ngIf="device.is_online">{{ formatTimestamp(device.timestamp) }}</span>
+                  <span *ngIf="!device.is_online" class="text-outline">Offline</span>
+                </td>
+              </tr>
+
+              <tr *ngIf="filteredDevices.length === 0">
+                <td colspan="7" class="px-lg py-xl text-center text-secondary text-body-md">
+                  <span class="material-symbols-outlined text-[48px] text-outline block mb-sm">search_off</span>
+                  No UC100 devices found. Waiting for MQTT data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Control Panel ────────────────────────────────────────────────── -->
+      <div *ngIf="showControlPanel && selectedDevice"
+        class="w-full md:w-[340px] bg-white border border-primary/30 rounded-xl shadow-lg p-lg flex-shrink-0">
+
+        <!-- Panel Header -->
+        <div class="flex items-center justify-between mb-lg">
+          <div>
+            <h2 class="text-headline-sm font-bold text-on-surface">Control Panel</h2>
+            <p class="text-label-md text-secondary font-mono">{{ selectedDevice.dev_eui }}</p>
+          </div>
+          <button (click)="closeControlPanel()" class="text-outline hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Current Status Mini Summary -->
+        <div class="grid grid-cols-2 gap-sm mb-lg p-md bg-surface-container-low rounded-lg">
+          <div class="text-center">
+            <div class="text-headline-md font-bold" [ngClass]="selectedDevice.battery_percent > 20 ? 'text-green-600' : 'text-red-600'">
+              {{ selectedDevice.battery_percent ?? '--' }}%
+            </div>
+            <div class="text-label-sm text-secondary">Battery SOC</div>
+          </div>
+          <div class="text-center">
+            <div class="text-headline-md font-bold text-primary">{{ selectedDevice.brightness_setting ?? '--' }}%</div>
+            <div class="text-label-sm text-secondary">Brightness</div>
+          </div>
+        </div>
+
+        <!-- ON / OFF Quick Buttons -->
+        <div class="mb-lg">
+          <p class="text-label-md font-semibold text-secondary uppercase tracking-wider mb-sm">Quick Control</p>
+          <div class="grid grid-cols-2 gap-sm">
+            <button (click)="turnOn()" [disabled]="isSendingCommand"
+              class="flex items-center justify-center gap-sm py-md bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors disabled:opacity-50 shadow-sm">
+              <span class="material-symbols-outlined">light_mode</span>
+              Turn ON
+            </button>
+            <button (click)="turnOff()" [disabled]="isSendingCommand"
+              class="flex items-center justify-center gap-sm py-md bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 shadow-sm">
+              <span class="material-symbols-outlined">dark_mode</span>
+              Turn OFF
+            </button>
+          </div>
+        </div>
+
+        <!-- Dimming Slider -->
+        <div class="mb-lg">
+          <p class="text-label-md font-semibold text-secondary uppercase tracking-wider mb-sm">
+            Dimming Control
+            <span class="ml-sm text-primary text-headline-sm font-bold normal-case">{{ dimValue }}%</span>
+          </p>
+          <input type="range" [(ngModel)]="dimValue" min="0" max="100" step="5"
+            class="w-full h-2 accent-primary cursor-pointer mb-sm" />
+          <div class="flex justify-between text-label-sm text-secondary mb-sm">
+            <span>0% (OFF)</span><span>50%</span><span>100% (Full)</span>
+          </div>
+          <button (click)="applyDim()" [disabled]="isSendingCommand"
+            class="w-full py-sm bg-primary/10 hover:bg-primary/20 text-primary font-semibold rounded-lg transition-colors disabled:opacity-50 text-label-md">
+            Apply Dimming ({{ dimValue }}%)
+          </button>
+        </div>
+
+
+
+        <!-- Sending indicator -->
+        <div *ngIf="isSendingCommand" class="flex items-center justify-center gap-sm text-primary py-sm">
+          <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+          <span class="text-label-md font-semibold">Sending command...</span>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Timer & Dimming Modal -->
+  <div *ngIf="showTimerModal"
+       class="fixed inset-0 z-50 flex items-center justify-center"
+       style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary text-[24px]">timer</span>
+          <div>
+            <h2 style="font-size:16px; font-weight:700; color:#1e293b; margin:0;">Set Timer &amp; Dimming</h2>
+            <p style="font-size:12px; color:#64748b; margin:0;">Applying to {{ selectedDevEuis.size }} selected device(s)</p>
+          </div>
+        </div>
+        <button (click)="closeTimerModal()" class="p-1 rounded-lg hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined text-secondary text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 20px;">
+
+        <!-- JKR Spec Banner -->
+        <!-- <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; margin-bottom:20px; display:flex; align-items:flex-start; gap:10px;">
+          <span class="material-symbols-outlined" style="color:#2563eb; font-size:18px; margin-top:1px;">info</span>
+          <div>
+            <p style="font-size:12px; font-weight:700; color:#1e40af; margin:0;">JKR Specification Defaults</p>
+            <p style="font-size:11px; color:#3b82f6; margin:4px 0 0;">Values are pre-filled based on JKR spec. You may change them before saving.</p>
+          </div>
+        </div> -->
+
+        <!-- Timer & Dim Grid -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+
+          <!-- Stage 1 -->
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px;">
+            <p style="font-size:11px; font-weight:700; color:#15803d; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 10px;">⏱ Stage 1 (Sunset)</p>
+            <label style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:3px;">Duration (hours)</label>
+            <input type="number" [(ngModel)]="timer1Hours" min="0" max="12"
+              style="width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:7px; font-size:14px; margin-bottom:8px;">
+            <label style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:3px;">Brightness (%)</label>
+            <input type="number" [(ngModel)]="timer1Dim" min="0" max="100"
+              style="width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:7px; font-size:14px;">
+          </div>
+
+          <!-- Stage 2 -->
+          <div style="background:#fefce8; border:1px solid #fde68a; border-radius:10px; padding:14px;">
+            <p style="font-size:11px; font-weight:700; color:#a16207; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 10px;">⏱ Stage 2 (Midnight)</p>
+            <label style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:3px;">Duration (hours)</label>
+            <input type="number" [(ngModel)]="timer2Hours" min="0" max="12"
+              style="width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:7px; font-size:14px; margin-bottom:8px;">
+            <label style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:3px;">Brightness (%)</label>
+            <input type="number" [(ngModel)]="timer2Dim" min="0" max="100"
+              style="width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:7px; font-size:14px;">
+          </div>
+
+          <!-- Stage 3 (full width) -->
+          <div style="grid-column: span 2; background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:14px;">
+            <p style="font-size:11px; font-weight:700; color:#c2410c; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 10px;">⏱ Stage 3 (Pre-Dawn)</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <label style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:3px;">Duration (hours)</label>
+                <input type="number" [(ngModel)]="timer3Hours" min="0" max="12"
+                  style="width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:7px; font-size:14px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:3px;">Brightness (%)</label>
+                <input type="number" [(ngModel)]="timer3Dim" min="0" max="100"
+                  style="width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:7px; font-size:14px;">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="border-top: 1px solid #e5e7eb; padding: 14px 20px; display:flex; justify-content:flex-end; gap:10px;">
+        <button (click)="closeTimerModal()"
+          style="padding:10px 20px; border:1px solid #e5e7eb; border-radius:8px; background:white; cursor:pointer; font-size:14px; color:#64748b;">
+          Cancel
+        </button>
+        <button (click)="applyTimersToSelected()" [disabled]="isSendingTimer"
+          style="padding:10px 22px; border-radius:8px; background:#2563eb; color:white; border:none; cursor:pointer; font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px;"
+          [style.opacity]="isSendingTimer ? '0.7' : '1'">
+          <span class="material-symbols-outlined" style="font-size:16px;">send</span>
+          {{ isSendingTimer ? 'Sending...' : 'Apply to ' + selectedDevEuis.size + ' Device(s)' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

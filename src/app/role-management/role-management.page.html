@@ -1,0 +1,106 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="user-container">
+    <!-- <div class="breadcrumb-header">
+      <span class="parent-path">User</span>
+      <span class="separator">/</span>
+      <span class="parent-path">Roles</span>
+      <span class="separator">/</span>
+      <span class="current-path">Roles</span>
+    </div> -->
+
+    <div class="criteria-card">
+      <h2 class="section-title">Role</h2>
+      <div class="criteria-grid">
+        <div class="field-group">
+          <label>Search Role</label>
+          <input type="text" class="custom-input" placeholder="Search by keyword" [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" />
+        </div>
+        <div class="actions-group">
+          <ion-button fill="solid" color="primary" class="icon-btn" title="Add Role" (click)="openModal()">
+            <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-operations">
+        <div class="operations-left">
+          <span class="total-count">Role Listing: <strong>{{ roles.length }}</strong></span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th style="width: 140px; text-align: center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let role of pagedRoles; let i = index">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td class="bold-text">{{ role.name }}</td>
+              <td>{{ role.description }}</td>
+              <td class="action-cells">
+                <button class="action-btn edit" title="Edit" (click)="openModal(role)">📝</button>
+                <button class="action-btn delete" title="Delete" (click)="deleteRole(role.id)">🗑️</button>
+              </td>
+            </tr>
+            <tr *ngIf="pagedRoles.length === 0">
+              <td colspan="4" style="text-align: center; padding: 20px;">No roles found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-pagination">
+        <div class="page-size-selector">
+          <select [(ngModel)]="pageSize" (ngModelChange)="setPageSize($event)">
+            <option [value]="10">10/page</option>
+            <option [value]="25">25/page</option>
+            <option [value]="50">50/page</option>
+          </select>
+        </div>
+        <div class="pagination-controls">
+          <button class="arrow-btn" [disabled]="currentPage === 1" (click)="previousPage()">&lt;</button>
+          <button class="page-num active">{{ currentPage }}</button>
+          <button class="arrow-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">&gt;</button>
+          <span class="goto-txt">Page {{ currentPage }} / {{ totalPages }}</span>
+        </div>
+      </div>
+    </div>
+
+    <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()" class="premium-modal">
+      <ng-template>
+        <ion-header class="ion-no-border">
+          <ion-toolbar class="modal-toolbar">
+            <ion-title class="modal-title">{{ isEditMode ? 'Edit Role' : 'Add New Role' }}</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding modal-content">
+          <div class="form-container">
+            <div class="modal-field-group">
+              <label class="modal-label">Role Name</label>
+              <input type="text" class="custom-input full-width" [(ngModel)]="currentRole.name" placeholder="Enter role name" />
+            </div>
+            <div class="modal-field-group">
+              <label class="modal-label">Description</label>
+              <input type="text" class="custom-input full-width" [(ngModel)]="currentRole.description" placeholder="Enter role description" />
+            </div>
+          </div>
+
+          <div class="modal-action-buttons">
+            <button class="modal-btn cancel-btn" (click)="closeModal()">Cancel</button>
+            <button class="modal-btn save-btn" (click)="saveRole()">Save Changes</button>
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+  </div>
+</ion-content>

@@ -1,0 +1,321 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="monitoring-content ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="fetchData($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+    <!-- Header Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">Real-time Monitoring</h1>
+        <!-- <p class="text-body-md font-body-md text-secondary mt-xs">Track solar panel performance and charging status across all solar units.</p> -->
+      </div>
+      <div class="flex flex-wrap items-center gap-md">
+        <!-- Bulk Actions -->
+        <ng-container *ngIf="selectedDevices.size > 0">
+          <div *ngIf="!isMbsAdmin"
+            class="flex items-center gap-sm bg-surface-container-low px-md py-2 rounded-lg border border-outline-variant">
+            <span class="text-label-sm font-label-sm text-secondary font-bold uppercase tracking-wider mr-2">TEST ({{
+              selectedDevices.size }}):</span>
+            <button (click)="executeBulkAction('ON')"
+              class="px-sm py-1 bg-success text-on-success rounded text-label-sm font-bold shadow-sm hover:opacity-90 transition-opacity">ON</button>
+            <button (click)="executeBulkAction('OFF')"
+              class="px-sm py-1 bg-error text-on-error rounded text-label-sm font-bold shadow-sm hover:opacity-90 transition-opacity">OFF</button>
+            <button (click)="promptBulkDim()"
+              class="px-sm py-1 bg-warning text-on-warning rounded text-label-sm font-bold shadow-sm hover:opacity-90 transition-opacity">DIM</button>
+            <button (click)="executeBulkSync()"
+              class="px-sm py-1 bg-primary text-on-primary rounded text-label-sm font-bold shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center">
+              <span class="material-symbols-outlined text-[16px]">sync</span>
+            </button>
+          </div>
+
+          <button *ngIf="isAdmin" (click)="openAssignScheduleModal()"
+            class="flex items-center gap-sm px-md py-2 bg-primary-container text-white hover:opacity-90 rounded shadow-sm transition-all text-label-md font-label-md">
+            <span class="material-symbols-outlined text-[18px]">link</span>
+            ASSIGN SCHEDULE
+          </button>
+        </ng-container>
+        <button *ngIf="isAdmin" (click)="openManageSchedulesModal()"
+          class="flex items-center gap-sm px-md py-2 border border-tertiary text-tertiary hover:bg-tertiary/5 rounded transition-all text-label-md font-label-md">
+          <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+          MANAGE SCHEDULES
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div
+      class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <div *ngIf="isSuperAdmin && projects.length > 0"
+        class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+        <span class="text-body-md font-body-md text-secondary">Filter by Project:</span>
+        <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()"
+          class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer">
+          <option [ngValue]="null">All Projects</option>
+          <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+      <div *ngIf="isSuperAdmin && projects.length > 0" class="h-8 w-[1px] bg-outline-variant mx-sm"></div>
+      <div class="flex-1 relative">
+        <span
+          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[20px]">search</span>
+        <input [(ngModel)]="searchTerm" (input)="filterDevices()"
+          class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-body-md placeholder:text-outline"
+          placeholder="Search serial or name..." type="text" />
+      </div>
+      <div class="flex items-center gap-sm px-md">
+        <span class="text-headline-md font-headline-md text-primary">{{ filteredData.length }}</span>
+        <span class="text-label-md font-label-md text-secondary uppercase tracking-tighter">devices found</span>
+      </div>
+    </div>
+
+    <!-- Data Table Container -->
+    <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="px-md py-md w-[50px]">
+                <ion-checkbox (ionChange)="toggleAll($event)" [checked]="isAllSelected()"
+                  [indeterminate]="selectedDevices.size > 0 && !isAllSelected()"></ion-checkbox>
+              </th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Device</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Battery %</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Solar PV</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-center">Brightness %</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-center">Signal Strength</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Status</th>
+              <th *ngIf="isAdmin" class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Schedule</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Last Synced
+              </th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-right">
+                Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            <tr *ngFor="let d of paginatedData" class="hover:bg-surface-container-low/50 transition-colors">
+              <td class="px-md py-md w-[50px]">
+                <ion-checkbox *ngIf="d.device_type !== 'Gateway'" (ionChange)="toggleSelection(d)"
+                  [checked]="selectedDevices.has(d.serial)"></ion-checkbox>
+              </td>
+              <td class="px-lg py-md">
+                <div class="flex flex-col">
+                  <!-- Expandable Name & Serial -->
+                  <div class="flex flex-col cursor-pointer group" (click)="d.showSerial = !d.showSerial">
+                    <div class="flex items-center gap-1">
+                      <span class="font-bold text-on-surface text-body-lg">{{ d.name || 'Unnamed' }}</span>
+                      <span class="material-symbols-outlined text-[18px] text-secondary transition-transform"
+                        [class.rotate-180]="d.showSerial">expand_more</span>
+                    </div>
+                    <span *ngIf="d.showSerial"
+                      class="font-mono text-secondary text-label-sm mt-1 bg-surface-container px-2 py-1 rounded w-fit select-text"
+                      (click)="$event.stopPropagation()">{{ d.serial }}</span>
+                  </div>
+
+                  <!-- Icons -->
+                  <div class="flex items-center gap-sm mt-2">
+                    <span *ngIf="d.device_type !== 'Gateway'" class="material-symbols-outlined text-[18px]"
+                      [style.color]="(d.is_lighting === 1 || d.is_lighting === true || d.led_power > 0) ? '#f59e0b' : '#cbd5e1'"
+                      title="Load">lightbulb</span>
+                    <span class="material-symbols-outlined text-[18px]"
+                      [style.color]="d.is_online === 1 ? '#10b981' : '#ef4444'" title="Network">wifi</span>
+                    <span *ngIf="d.device_type !== 'Gateway'" class="material-symbols-outlined text-[18px]"
+                      [style.color]="d.solar_panel_power > 0 ? '#3b82f6' : '#cbd5e1'" title="Solar">bolt</span>
+                    <span class="flex items-center gap-1 text-label-sm font-semibold"
+                      *ngIf="d.device_type !== 'Gateway'"
+                      [style.color]="d.battery_percent > 20 ? '#2dd36f' : '#eb445a'">
+                      <span class="material-symbols-outlined text-[18px]">battery_horiz_050</span>
+                      {{ d.battery_percent != null ? d.battery_percent + '%' : '0%' }}
+                    </span>
+                  </div>
+                </div>
+              </td>
+              <td class="px-lg py-md">
+                <div *ngIf="d.device_type !== 'Gateway'">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                    <span class="material-symbols-outlined text-[16px]"
+                      [style.color]="d.battery_percent > 20 ? '#2dd36f' : '#eb445a'">battery_horiz_050</span>
+                    {{ d.battery_percent != null ? d.battery_percent + '%' : 'N/A' }}
+                  </span>
+                  <div class="text-body-sm text-secondary mt-1">{{ d.battery_voltage != null ? (d.battery_voltage | number:'1.2-2') + 'V' : '--V' }}</div>
+                </div>
+                <span *ngIf="d.device_type === 'Gateway'" class="text-secondary">--</span>
+              </td>
+              <td class="px-lg py-md">
+                <span *ngIf="d.device_type !== 'Gateway'"
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                  <span class="material-symbols-outlined text-[16px] text-warning">light_mode</span>
+                  {{ d.solar_panel_power != null ? d.solar_panel_power + ' W' : '0 W' }}
+                </span>
+                <span *ngIf="d.device_type === 'Gateway'" class="text-secondary">--</span>
+              </td>
+              <td class="px-lg py-md align-middle text-center">
+                <div class="flex items-center justify-center">
+                  <span *ngIf="d.device_type !== 'Gateway'" class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                    <span class="material-symbols-outlined text-[16px] leading-none" [ngClass]="d.led_power > 0 ? 'text-amber-500' : 'text-gray-400'">lightbulb</span>
+                    <span class="leading-none">{{ getBrightnessPercentage(d) }}%</span>
+                  </span>
+                  <span *ngIf="d.device_type === 'Gateway'" class="text-secondary">--</span>
+                </div>
+              </td>
+              <td class="px-lg py-md align-middle">
+                <div class="flex items-center justify-center gap-2"
+                  title="{{ d.is_online === 1 ? (d.signal_strength || 0) : 0 }} / 5">
+                  <div class="flex items-end gap-[2px] h-4">
+                    <div class="w-[3px] rounded-sm"
+                      [ngClass]="d.is_online === 1 && (d.signal_strength || 0) >= 1 ? 'bg-primary' : 'bg-outline-variant'"
+                      style="height: 4px;"></div>
+                    <div class="w-[3px] rounded-sm"
+                      [ngClass]="d.is_online === 1 && (d.signal_strength || 0) >= 2 ? 'bg-primary' : 'bg-outline-variant'"
+                      style="height: 7px;"></div>
+                    <div class="w-[3px] rounded-sm"
+                      [ngClass]="d.is_online === 1 && (d.signal_strength || 0) >= 3 ? 'bg-primary' : 'bg-outline-variant'"
+                      style="height: 10px;"></div>
+                    <div class="w-[3px] rounded-sm"
+                      [ngClass]="d.is_online === 1 && (d.signal_strength || 0) >= 4 ? 'bg-primary' : 'bg-outline-variant'"
+                      style="height: 13px;"></div>
+                    <div class="w-[3px] rounded-sm"
+                      [ngClass]="d.is_online === 1 && (d.signal_strength || 0) >= 5 ? 'bg-primary' : 'bg-outline-variant'"
+                      style="height: 16px;"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-lg py-md">
+                <div class="flex items-center gap-sm">
+                  <span class="w-2 h-2 rounded-full"
+                    [ngClass]="d.is_online === 1 ? 'bg-green-500' : 'bg-red-500'"></span>
+                  <span class="px-2 py-0.5 rounded text-label-sm font-semibold"
+                    [ngClass]="d.is_online === 1 ? 'bg-green-500/20 text-green-700' : 'bg-red-500/20 text-red-700'">
+                    {{ d.is_online === 1 ? 'Online' : 'Offline' }}
+                  </span>
+                </div>
+              </td>
+              <td *ngIf="isAdmin" class="px-lg py-md text-body-md">
+                <span *ngIf="d.device_type !== 'Gateway'" class="px-2 py-1 rounded text-label-sm font-semibold"
+                  [class.bg-blue-100]="d.schedule_profile" [class.text-blue-700]="d.schedule_profile"
+                  [class.bg-surface-container-high]="!d.schedule_profile" [class.text-secondary]="!d.schedule_profile">
+                  {{ d.schedule_profile?.name || 'Unassigned' }}
+                </span>
+                <span *ngIf="d.device_type === 'Gateway'" class="text-secondary">--</span>
+              </td>
+              <td class="px-lg py-md text-body-md text-on-surface-variant">
+                <span *ngIf="d.is_online === 1">{{ d.updated_datetime | date:'medium' }}</span>
+                <span *ngIf="d.is_online !== 1" class="text-outline">-</span>
+              </td>
+              <td *ngIf="!d.isClone" [attr.rowspan]="(isMbsAdmin && hasCloneMapping(d.serial)) ? 2 : 1" class="px-lg py-md text-right align-middle" [ngClass]="{'bg-white': isMbsAdmin && hasCloneMapping(d.serial)}">
+                <div class="flex justify-center gap-sm items-center">
+                  <!-- Quick Test Buttons -->
+                  <ng-container *ngIf="d.device_type !== 'Gateway'">
+                    <button (click)="executeAction(d, 'ON')" [disabled]="executingActions.has(d.serial + '-ON')"
+                      class="px-2 py-1 border transition-colors rounded text-label-sm font-bold uppercase min-w-[48px] flex items-center justify-center border-success text-success hover:bg-success hover:text-white disabled:bg-surface-container disabled:border-transparent disabled:text-outline disabled:cursor-not-allowed">
+                      <span *ngIf="!executingActions.has(d.serial + '-ON')">ON</span>
+                      <span *ngIf="executingActions.has(d.serial + '-ON')"
+                        class="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                    </button>
+                    <button (click)="executeAction(d, 'OFF')" [disabled]="executingActions.has(d.serial + '-OFF')"
+                      class="px-2 py-1 border transition-colors rounded text-label-sm font-bold uppercase min-w-[48px] flex items-center justify-center border-error text-error hover:bg-error hover:text-white disabled:bg-surface-container disabled:border-transparent disabled:text-outline disabled:cursor-not-allowed">
+                      <span *ngIf="!executingActions.has(d.serial + '-OFF')">OFF</span>
+                      <span *ngIf="executingActions.has(d.serial + '-OFF')"
+                        class="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                    </button>
+                    <button (click)="executeAction(d, 'DIM')" [disabled]="executingActions.has(d.serial + '-DIM')"
+                      class="px-2 py-1 border transition-colors rounded text-label-sm font-bold uppercase min-w-[48px] flex items-center justify-center border-warning text-warning hover:bg-warning hover:text-white disabled:bg-surface-container disabled:border-transparent disabled:text-outline disabled:cursor-not-allowed">
+                      <span *ngIf="!executingActions.has(d.serial + '-DIM')">DIM</span>
+                      <span *ngIf="executingActions.has(d.serial + '-DIM')"
+                        class="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                    </button>
+                  </ng-container>
+
+                  <!-- Refresh Button -->
+                  <button (click)="syncDevice(d)" [disabled]="syncingDevices.has(d.serial)"
+                    class="text-primary hover:text-primary-container transition-colors disabled:opacity-50 flex items-center justify-center p-1"
+                    title="Sync">
+                    <span class="material-symbols-outlined text-[20px]"
+                      [class.animate-spin]="syncingDevices.has(d.serial)">sync</span>
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedData.length === 0">
+              <td colspan="9" class="px-lg py-xl text-center text-secondary text-body-md">No devices found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer / Pagination -->
+      <div
+        class="bg-surface-container-low px-lg py-md border-t border-outline-variant flex items-center justify-between">
+        <div class="flex items-center gap-md">
+          <p class="text-label-md font-label-md text-secondary uppercase">Page {{ currentPage }} of {{ totalPages }}</p>
+          <div class="flex items-center gap-sm">
+            <span class="text-label-md font-label-md text-secondary">Rows per page:</span>
+            <select [ngModel]="pageSize" (change)="changePageSize($event)"
+              class="text-label-md font-label-md text-on-surface bg-transparent border border-outline-variant rounded py-1 pl-2 pr-6 cursor-pointer focus:ring-0 focus:border-primary">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-sm">
+          <button (click)="prevPage()" [disabled]="currentPage === 1"
+            class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center"
+            [class.text-outline]="currentPage === 1" [class.cursor-not-allowed]="currentPage === 1"
+            [class.text-secondary]="currentPage !== 1" [class.hover:border-primary]="currentPage !== 1">
+            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+          </button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+            class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center"
+            [class.text-outline]="currentPage === totalPages" [class.cursor-not-allowed]="currentPage === totalPages"
+            [class.text-secondary]="currentPage !== totalPages"
+            [class.hover:border-primary]="currentPage !== totalPages">
+            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Progress Overlay for Bulk Actions -->
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm"
+    *ngIf="bulkActionProgress">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+      <div class="bg-surface-container-low px-lg py-md border-b border-outline-variant">
+        <h3 class="text-headline-sm font-headline-sm text-on-surface m-0">Bulk Action Progress</h3>
+      </div>
+      <div class="p-lg">
+        <div class="flex justify-between text-label-md font-label-md text-secondary mb-xs">
+          <span>{{ bulkActionProgress.action }}</span>
+          <span>{{ bulkActionProgress.current }} / {{ bulkActionProgress.total }}</span>
+        </div>
+        <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-md">
+          <div class="bg-primary h-full transition-all duration-300"
+            [style.width]="(bulkActionProgress.current / bulkActionProgress.total * 100) + '%'"></div>
+        </div>
+        <p class="text-body-md font-body-md text-on-surface-variant m-0">{{ bulkActionProgress.status }}</p>
+
+        <div *ngIf="bulkActionProgress.errors.length > 0"
+          class="mt-md p-md bg-error/10 border border-error/20 rounded-lg max-h-[150px] overflow-y-auto custom-scrollbar">
+          <p class="text-label-md font-label-md text-error font-bold m-0 mb-xs">Errors ({{
+            bulkActionProgress.errors.length }})</p>
+          <ul class="m-0 pl-5 text-body-sm font-body-sm text-error">
+            <li *ngFor="let err of bulkActionProgress.errors">{{ err }}</li>
+          </ul>
+        </div>
+      </div>
+      <div class="bg-surface-container-low px-lg py-md border-t border-outline-variant flex justify-end">
+        <button (click)="closeBulkProgress()"
+          class="px-md py-2 border border-outline-variant rounded bg-white text-secondary hover:bg-surface-container-lowest transition-colors text-label-md font-label-md"
+          [disabled]="bulkActionProgress.current < bulkActionProgress.total && bulkActionProgress.status !== 'Completed!'">
+          CLOSE
+        </button>
+      </div>
+    </div>
+  </div>
+</ion-content>

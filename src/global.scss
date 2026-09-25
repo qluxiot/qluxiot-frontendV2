@@ -1,0 +1,619 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Leaflet map styles */
+@import "leaflet/dist/leaflet.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+/* Dark system mode disabled — using light theme */
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
+
+/* Force sidebar width globally so Ionic's split-pane doesn't override it */
+ion-split-pane {
+  --side-max-width: 330px;
+  --side-min-width: 330px;
+}
+
+ion-menu {
+  --width: 330px !important;
+  max-width: 330px !important;
+}
+
+/* Prevent page content from overlapping with the custom header */
+app-custom-header + ion-content {
+  position: absolute !important;
+  top: 100px !important; /* Must match the custom header's min-height */
+  bottom: 0 !important;
+  height: auto !important;
+}
+
+/* ===== Premium Modal Global Styles ===== */
+/* ion-modal renders outside the component, so ALL modal styles must be global */
+.premium-modal {
+  --width: 480px;
+  --max-height: 90%;
+  --border-radius: 14px;
+  --box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  ion-header ion-toolbar {
+    --background: #f8fafc;
+    --border-width: 0 0 1px 0;
+    --border-color: #e2e8f0;
+    padding: 0.5rem 0;
+  }
+
+  ion-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  ion-content {
+    --background: #ffffff;
+  }
+
+  .form-container {
+    padding: 1.5rem 1rem 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .modal-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .modal-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: 0.02em;
+  }
+
+  .custom-input,
+  .custom-select {
+    width: 100%;
+    box-sizing: border-box;
+    height: 44px;
+    padding: 0 0.85rem;
+    font-size: 0.95rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #1b2b3a;
+      box-shadow: 0 0 0 3px rgba(27, 43, 58, 0.08);
+    }
+  }
+
+  .modal-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .modal-btn {
+    height: 42px;
+    padding: 0 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.cancel-btn {
+      background-color: #ffffff;
+      color: #64748b;
+      border: 1.5px solid #cbd5e1;
+
+      &:hover {
+        background-color: #f8fafc;
+        color: #334155;
+        border-color: #94a3b8;
+      }
+    }
+
+    &.save-btn {
+      background-color: #1b2b3a;
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 6px -1px rgba(27, 43, 58, 0.25);
+
+      &:hover {
+        background-color: #2c4257;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 10px -1px rgba(27, 43, 58, 0.35);
+      }
+    }
+  }
+}
+
+/* ===== Project Modal (wider, 2-column layout) ===== */
+.project-modal {
+  --width: 680px;
+  --max-height: 90%;
+  --border-radius: 14px;
+  --box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  ion-header ion-toolbar {
+    --background: #f8fafc;
+    --border-width: 0 0 1px 0;
+    --border-color: #e2e8f0;
+    padding: 0.5rem 0;
+  }
+
+  ion-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  ion-content {
+    --background: #ffffff;
+  }
+
+  .form-container {
+    padding: 1.5rem 1rem 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* Two-column row */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .modal-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .modal-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #475569;
+
+    .required { color: #ef4444; margin-left: 2px; }
+  }
+
+  .custom-input,
+  .custom-select {
+    width: 100%;
+    box-sizing: border-box;
+    height: 44px;
+    padding: 0 0.85rem;
+    font-size: 0.95rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #1b2b3a;
+      box-shadow: 0 0 0 3px rgba(27, 43, 58, 0.08);
+    }
+  }
+
+  .modal-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .modal-btn {
+    height: 42px;
+    padding: 0 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.cancel-btn {
+      background-color: #ffffff;
+      color: #64748b;
+      border: 1.5px solid #cbd5e1;
+
+      &:hover {
+        background-color: #f8fafc;
+        color: #334155;
+        border-color: #94a3b8;
+      }
+    }
+
+    &.save-btn {
+      background-color: #1b2b3a;
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 6px -1px rgba(27, 43, 58, 0.25);
+
+      &:hover {
+        background-color: #2c4257;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 10px -1px rgba(27, 43, 58, 0.35);
+      }
+    }
+  }
+
+  /* Location auto-fill */
+  .location-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .location-label-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .location-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1.5px solid #1b2b3a;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #1b2b3a;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background-color: #1b2b3a;
+      color: #ffffff;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+ /* Custom UI for Project Filter Dropdown */
+.project-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  ion-icon {
+    font-size: 1.2rem;
+    color: #94a3b8;
+  }
+
+  label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+
+    option {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+  }
+}
+
+/* ===== Custom Modal Registration Styles ===== */
+ion-modal.transparent-modal {
+  --background: transparent;
+  --box-shadow: none;
+}
+
+ion-modal.transparent-modal::part(content) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.transparent-content {
+  --background: transparent;
+}.custom-modal-backdrop-inner {
+  position: absolute;
+  // inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // padding: 16px;
+  overflow-y: auto;
+}
+
+.custom-modal {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--c-surface-container-lowest, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--c-outline-variant, #cbd5e1);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
+  margin: auto;
+  
+  /* Interactive Backdrop Accents */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--c-primary, #0049c8), var(--c-secondary, #006a61), var(--c-primary, #0049c8));
+    opacity: 0.2;
+  }
+
+  .modal-header {
+    padding: 24px 24px 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h1 {
+      font-family: var(--font-display, 'Hanken Grotesk'), sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--c-on-surface, #0b1c30);
+      margin: 0;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--c-on-surface-variant, #434655);
+      padding: 6px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, transform 0.1s;
+      
+      &:hover { background-color: var(--c-surface-variant, #d3e4fe); }
+      &:active { transform: scale(0.9); }
+      
+      ion-icon { font-size: 22px; }
+    }
+  }
+
+  .info-box {
+    margin: 0 24px 24px 24px;
+    padding: 12px 16px;
+    background-color: var(--c-surface-container, #e5eeff);
+    border-radius: 8px;
+    border-left: 4px solid var(--c-primary, #0049c8);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    ion-icon {
+      color: var(--c-primary, #0049c8);
+      font-size: 18px;
+      margin-top: 2px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--c-on-surface-variant, #434655);
+    }
+  }
+
+  .registration-form {
+    padding: 0 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+
+      @media (min-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      &.single-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--c-on-surface-variant, #434655);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+
+      .input-wrapper, .select-wrapper {
+        position: relative;
+        transition: transform 0.2s;
+
+        &:focus-within {
+          transform: scale(1.01);
+        }
+      }
+
+      input, select {
+        width: 100%;
+        background-color: var(--c-surface, #f8f9ff);
+        border: 1px solid var(--c-outline-variant, #c3c6d8);
+        border-radius: 8px;
+        font-family: var(--font-body, 'Hanken Grotesk'), sans-serif;
+        font-size: 15px;
+        color: var(--c-on-surface, #0b1c30);
+        padding: 12px 16px;
+        outline: none;
+        transition: all 0.2s;
+        
+        &::placeholder { opacity: 0.4; }
+        
+        &:focus {
+          border-color: transparent;
+          box-shadow: 0 0 0 2px var(--c-primary, #0049c8);
+        }
+      }
+      
+      select {
+        appearance: none;
+        cursor: pointer;
+      }
+
+      .input-wrapper.has-icon input,
+      .select-wrapper.has-icon select {
+        padding-left: 40px;
+      }
+
+      .prefix-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--c-outline, #737687);
+        font-size: 18px;
+        pointer-events: none;
+        
+        &.whatsapp-color { color: #25D366; }
+      }
+
+      .select-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--c-on-surface-variant, #434655);
+        pointer-events: none;
+        font-size: 18px;
+      }
+    }
+
+    .form-actions {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      button {
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        
+        &:active { transform: scale(0.98); }
+        &:disabled { opacity: 0.5; cursor: not-allowed; }
+      }
+
+      .btn-save {
+        background-color: var(--c-primary, #0049c8);
+        color: var(--c-on-primary, #ffffff);
+        height: 48px;
+        font-family: var(--font-display, 'Hanken Grotesk'), sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        
+        &:hover:not(:disabled) {
+          box-shadow: 0 8px 12px -3px rgba(0, 73, 200, 0.2);
+        }
+        
+        ion-icon { font-size: 20px; }
+      }
+
+      .btn-cancel {
+        height: 40px;
+        background: transparent;
+        color: var(--c-on-surface-variant, #434655);
+        font-family: 'Hanken Grotesk', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        
+        &:hover { background-color: var(--c-surface-variant, #d3e4fe); }
+    }
+  }
+}
+}

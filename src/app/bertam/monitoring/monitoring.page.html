@@ -1,0 +1,145 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="monitoring-content ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="fetchData($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+    <!-- Header Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">Bertam Real-time Monitoring</h1>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <!-- Site Filter -->
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+        <span class="text-body-md font-body-md text-secondary">Site:</span>
+        <select [(ngModel)]="selectedSite" (ngModelChange)="applyFilter()"
+          class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer outline-none">
+          <option value="All">All Sites</option>
+          <option value="Site 1">Site 1</option>
+          <option value="Site 2">Site 2</option>
+        </select>
+      </div>
+
+      <!-- Search -->
+      <div class="flex-1 relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[20px]">search</span>
+        <input [(ngModel)]="searchQuery" (input)="applyFilter()"
+          class="w-full pl-10 pr-4 py-2 bg-transparent border-none focus:ring-0 text-body-md placeholder:text-outline"
+          placeholder="Search by name or EUI..." type="text" />
+      </div>
+
+      <!-- Device count -->
+      <div class="flex items-center gap-sm px-md">
+        <span class="text-headline-md font-headline-md text-primary">{{ filteredDevices.length }}</span>
+        <span class="text-label-md font-label-md text-secondary uppercase tracking-tighter">devices found</span>
+      </div>
+
+      <!-- Refresh Button -->
+      <button (click)="fetchData()" [disabled]="isLoading"
+        class="flex items-center gap-sm px-md py-2 bg-primary text-white hover:bg-primary/90 rounded-lg transition-colors text-label-md font-label-md shadow-sm disabled:opacity-50">
+        <span class="material-symbols-outlined text-[18px]" [class.animate-spin]="isLoading">{{ isLoading ? 'progress_activity' : 'refresh' }}</span>
+        {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
+
+    <!-- Data Table Container -->
+    <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Device</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Site</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Battery</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Temp</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Solar</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">LED Status</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Environment</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-right">Last Updated</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            <tr *ngFor="let device of filteredDevices" class="hover:bg-surface-container-low/50 transition-colors">
+
+              <td class="px-lg py-md">
+                <div class="flex items-center gap-sm">
+                  <span class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="device.is_online ? 'bg-green-500' : 'bg-red-500'"></span>
+                  <div>
+                    <div class="font-bold text-on-surface text-body-lg">{{ device.name || device.dev_eui }}</div>
+                    <div class="font-mono text-secondary text-label-sm">{{ device.dev_eui }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-lg py-md">
+                <span class="px-2 py-1 rounded text-label-sm font-semibold"
+                  [ngClass]="device.site_name === 'Site 1' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'">
+                  {{ device.site_name || '--' }}
+                </span>
+              </td>
+
+              <td class="px-lg py-md">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                  <span class="material-symbols-outlined text-[16px]"
+                    [style.color]="device.battery_percent > 20 ? '#2dd36f' : '#eb445a'">battery_horiz_050</span>
+                  {{ device.battery_percent != null ? device.battery_percent + '%' : 'N/A' }}
+                </span>
+                <div class="text-body-sm text-secondary mt-1">{{ device.battery_voltage ?? '--' }}V</div>
+              </td>
+
+              <td class="px-lg py-md">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                  <span class="material-symbols-outlined text-[16px] text-error">thermostat</span>
+                  {{ device.battery_temp ?? '--' }}°C
+                </span>
+              </td>
+
+              <td class="px-lg py-md">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-body-md font-semibold text-on-surface">
+                  <span class="material-symbols-outlined text-[16px] text-warning">light_mode</span>
+                  {{ device.solar_panel_voltage ?? '--' }}V
+                </span>
+                <div class="text-body-sm text-secondary mt-1">{{ device.solar_current ?? '--' }}mA</div>
+              </td>
+
+              <td class="px-lg py-md">
+                <div class="flex items-center gap-sm">
+                  <span class="w-2 h-2 rounded-full"
+                    [ngClass]="device.led_status > 0 ? 'bg-amber-400' : 'bg-gray-300'"></span>
+                  <span class="px-2 py-0.5 rounded text-label-sm font-semibold"
+                    [ngClass]="device.led_status > 0 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'">
+                    {{ device.led_status > 0 ? 'ON' : 'OFF' }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="px-lg py-md text-body-md">
+                <div class="text-body-sm text-secondary">
+                  <div>RSSI: <span class="font-semibold text-on-surface">{{ device.rssi ?? '--' }}</span></div>
+                  <div>SNR: <span class="font-semibold text-on-surface">{{ device.snr ?? '--' }}</span></div>
+                </div>
+              </td>
+
+              <td class="px-lg py-md text-body-md text-on-surface-variant text-right">
+                <span *ngIf="device.is_online">{{ formatTimestamp(device.timestamp) }}</span>
+                <span *ngIf="!device.is_online" class="text-outline">Offline</span>
+              </td>
+
+            </tr>
+
+            <tr *ngIf="filteredDevices.length === 0">
+              <td colspan="7" class="px-lg py-xl text-center text-secondary text-body-md">No devices found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</ion-content>

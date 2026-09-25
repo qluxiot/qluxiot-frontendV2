@@ -1,0 +1,102 @@
+<app-custom-header title="WhatsApp Server Management"></app-custom-header>
+
+<ion-content>
+  <div class="main-content">
+    <div class="max-w-container">
+      
+      <!-- Header Section -->
+      <div class="page-header">
+        <div class="icon-box">
+          <ion-icon name="logo-whatsapp"></ion-icon>
+        </div>
+        <div>
+          <h1>WhatsApp Server</h1>
+          <!-- <p>Connect a WhatsApp number to send automated device alarm notifications.</p> -->
+        </div>
+      </div>
+
+      <!-- Status Banner -->
+      <div class="status-banner" 
+           [ngClass]="status.authenticated ? 'status-connected' : 'status-waiting'">
+        <div class="status-info">
+          <span class="status-dot"></span>
+          <span class="status-text">
+            {{ status.authenticated ? 'Connected to ' + connectedNumberClean : 'Waiting for QR Scan' }}
+          </span>
+        </div>
+        <button class="btn-refresh" (click)="refreshQR()" [disabled]="isActionLoading || status.authenticated" *ngIf="canManage">
+          {{ isActionLoading ? 'REFRESHING...' : 'REFRESH QR' }}
+        </button>
+      </div>
+
+      <!-- Main State Sections -->
+      <!-- State 1: Need QR to Connect -->
+      <div class="qr-card" *ngIf="status.needsQR && !status.authenticated">
+        
+        <!-- QR Image Side -->
+        <div class="qr-image-side">
+          <div class="qr-container">
+            <img [src]="qrDataUri" *ngIf="qrDataUri && !isActionLoading" alt="WhatsApp QR Code">
+            <div class="spinner-wrapper" *ngIf="!qrDataUri || isActionLoading">
+              <ion-spinner name="crescent"></ion-spinner>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions Side -->
+        <div class="qr-instructions-side">
+          <div class="instruction-steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <p>Open <strong>WhatsApp</strong> on your phone</p>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <p>Go to <strong>Settings</strong> &rarr; <strong>Linked Devices</strong></p>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <p>Tap <strong>Link a Device</strong> and scan this code</p>
+            </div>
+          </div>
+
+          <div class="qr-footer">
+            <p>QR code expires in 5 minutes</p>
+            <!-- Progress bar could go here, omitting logic for simplicity -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- State 2: Connected & Authenticated -->
+      <div class="connected-card" *ngIf="status.authenticated">
+        <ion-icon name="checkmark-circle-outline" class="success-icon"></ion-icon>
+        <h3>Successfully Connected</h3>
+        <p>WhatsApp server is running and ready to send notifications.</p>
+        <button class="btn-logout" (click)="logout()" [disabled]="isActionLoading" *ngIf="canManage">
+          LOGOUT DEVICE
+        </button>
+      </div>
+
+      <!-- Server Management Section -->
+      <div class="server-management" *ngIf="canManage">
+        <h3 class="section-title">Server Management</h3>
+        <div class="reset-card">
+          <div class="reset-info">
+            <div class="icon-box">
+              <ion-icon name="trash-outline"></ion-icon>
+            </div>
+            <div>
+              <h4>Full Reset</h4>
+              <p>Delete all authentication files and start fresh. Use only if other options fail. This action will log out all active sessions.</p>
+            </div>
+          </div>
+          <button class="btn-reset" (click)="resetConnection()" [disabled]="isActionLoading">
+            RESET
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

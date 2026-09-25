@@ -1,0 +1,207 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-surface-container-low border-b border-outline-variant px-sm">
+    <ion-title class="text-headline-md font-headline-md text-on-surface">
+      {{ isEditing ? (currentSchedule.id ? 'Edit Schedule Profile' : 'New Schedule Profile') : 'Manage Schedules' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors text-secondary" (click)="dismiss()">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg-surface">
+  <!-- LIST VIEW -->
+  <div *ngIf="!isEditing" class="p-lg max-w-4xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md mb-lg">
+      <p class="text-body-md font-body-md text-secondary m-0">
+        <span *ngIf="isSolar">Define autonomous dimming phases. The controller executes them from sunset automatically.</span>
+        <span *ngIf="!isSolar">Create time-based rules pushed directly to the LED streetlight hardware.</span>
+      </p>
+      <button (click)="startNewSchedule()" class="flex items-center gap-sm px-md py-2 bg-primary text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity text-label-md font-label-md shrink-0">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        New Profile
+      </button>
+    </div>
+
+    <div *ngIf="isLoading" class="flex justify-center p-xl">
+      <ion-spinner></ion-spinner>
+    </div>
+
+    <div class="grid grid-cols-1 gap-md">
+      <div *ngFor="let s of schedules" class="bg-white border border-outline-variant rounded-xl p-md shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex justify-between items-start border-b border-surface-variant pb-sm mb-sm">
+          <h3 class="text-title-lg font-title-lg text-on-surface m-0">{{ s.name }}</h3>
+          <div class="flex gap-sm">
+            <button (click)="editSchedule(s)" class="w-8 h-8 flex items-center justify-center rounded text-secondary hover:bg-primary/10 hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button (click)="deleteSchedule(s.id)" class="w-8 h-8 flex items-center justify-center rounded text-secondary hover:bg-error/10 hover:text-error transition-colors">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="text-body-md text-on-surface-variant">
+          <!-- Solar List: Duration phases -->
+          <ng-container *ngIf="isSolar">
+            <p class="font-bold mb-xs">Dimming Phases (from sunset):</p>
+            <ul class="list-disc list-inside space-y-1 mb-md">
+              <li *ngFor="let r of s.rules; let i = index">
+                <span class="font-semibold text-on-surface">Phase {{ i + 1 }}:</span>
+                <span class="text-warning font-semibold mx-1">{{ r.hours }} hr(s)</span>
+                at
+                <span class="text-success font-semibold ml-1">{{ r.brightness }}%</span>
+              </li>
+            </ul>
+          </ng-container>
+
+          <!-- LED List: Clock time stages -->
+          <ng-container *ngIf="!isSolar">
+            <p class="font-bold mb-xs">Time Stages:</p>
+            <ul class="list-disc list-inside space-y-1 mb-md">
+              <li *ngFor="let r of s.rules">
+                <span class="font-semibold text-on-surface">{{ r.time }}</span> &rarr;
+                <span class="font-bold" [ngClass]="{'text-success': r.action === 'ON', 'text-error': r.action === 'OFF', 'text-warning': r.action === 'DIM'}">
+                  {{ r.action }}
+                  <span *ngIf="r.action === 'DIM' || r.action === 'ON'">({{ r.brightness }}%)</span>
+                </span>
+              </li>
+            </ul>
+          </ng-container>
+
+          <p *ngIf="!s.rules || s.rules.length === 0" class="text-secondary italic">No rules defined.</p>
+        </div>
+        
+        <div class="mt-sm pt-sm border-t border-surface-variant text-label-sm text-secondary">
+          Currently assigned to <span class="font-bold text-on-surface">{{ s.devices?.length || 0 }}</span> devices.
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && schedules.length === 0" class="text-center p-xl bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl mt-lg">
+      <span class="material-symbols-outlined text-[48px] text-outline mb-sm">calendar_month</span>
+      <p class="text-body-lg font-body-lg text-secondary m-0">No schedule profiles found.</p>
+    </div>
+  </div>
+
+  <!-- EDIT VIEW -->
+  <div *ngIf="isEditing" class="p-lg max-w-3xl mx-auto pb-24">
+    <div class="bg-white border border-outline-variant rounded-xl p-lg shadow-sm mb-lg">
+      <h3 class="text-title-lg font-title-lg text-on-surface mb-md flex items-center gap-sm border-b border-surface-variant pb-xs">
+        <span class="material-symbols-outlined text-primary">info</span> Profile Information
+      </h3>
+      <div class="flex flex-col gap-xs mb-md">
+        <label class="text-label-md font-label-md text-on-surface-variant font-semibold">Profile Name <span class="text-error">*</span></label>
+        <input type="text" [(ngModel)]="currentSchedule.name" placeholder="e.g. Highway Night Mode" class="w-full px-md py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary focus:ring-1 focus:ring-primary transition-all text-body-md text-on-surface">
+      </div>
+    </div>
+
+    <!-- SOLAR: Duration-based phases -->
+    <ng-container *ngIf="isSolar">
+      <div class="bg-white border border-outline-variant rounded-xl p-lg shadow-sm">
+        <div class="flex justify-between items-center border-b border-surface-variant pb-xs mb-sm">
+          <h3 class="text-title-lg font-title-lg text-on-surface flex items-center gap-sm m-0">
+            <span class="material-symbols-outlined text-warning">light_mode</span> Dimming Phases
+          </h3>
+          <button (click)="addRule()" class="flex items-center gap-xs px-sm py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded transition-colors text-label-md font-bold">
+            <span class="material-symbols-outlined text-[18px]">add</span> Add Phase
+          </button>
+        </div>
+        <p class="text-body-sm font-body-sm text-secondary mb-md">
+          Phases run consecutively from sunset. The solar controller executes them using its built-in timer.
+        </p>
+
+        <div *ngIf="currentSchedule.rules.length === 0" class="text-center p-md bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg text-secondary text-body-md mb-md">
+          No phases defined. Click Add Phase to begin.
+        </div>
+
+        <div class="space-y-md">
+          <div *ngFor="let rule of currentSchedule.rules; let i = index" class="flex flex-wrap md:flex-nowrap items-end gap-md p-md bg-surface-container-lowest border border-surface-variant rounded-lg">
+            <div class="text-label-md font-bold text-outline min-w-[60px] pb-2">Phase {{ i + 1 }}</div>
+            
+            <div class="flex-1 flex flex-col gap-xs">
+              <label class="text-label-sm font-label-sm text-on-surface-variant font-semibold">Duration (Hours)</label>
+              <input type="number" [(ngModel)]="rule.hours" min="0.5" max="12" step="0.5" placeholder="e.g. 3" class="w-full px-sm py-1.5 border border-outline-variant rounded-md bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-md">
+            </div>
+
+            <div class="flex-1 flex flex-col gap-xs">
+              <label class="text-label-sm font-label-sm text-on-surface-variant font-semibold">Brightness %</label>
+              <input type="number" [(ngModel)]="rule.brightness" min="1" max="100" placeholder="e.g. 100" class="w-full px-sm py-1.5 border border-outline-variant rounded-md bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-md">
+            </div>
+
+            <button (click)="removeRule(i)" class="w-10 h-10 shrink-0 flex items-center justify-center rounded text-secondary hover:bg-error/10 hover:text-error transition-colors mb-0.5">
+              <span class="material-symbols-outlined text-[20px]">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- LED: Clock time-based stages -->
+    <ng-container *ngIf="!isSolar">
+      <div class="bg-white border border-outline-variant rounded-xl p-lg shadow-sm">
+        <div class="flex justify-between items-center border-b border-surface-variant pb-xs mb-sm">
+          <h3 class="text-title-lg font-title-lg text-on-surface flex items-center gap-sm m-0">
+            <span class="material-symbols-outlined text-primary">schedule</span> Time Stages
+          </h3>
+          <button (click)="addRule()" class="flex items-center gap-xs px-sm py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded transition-colors text-label-md font-bold">
+            <span class="material-symbols-outlined text-[18px]">add</span> Add Stage
+          </button>
+        </div>
+        <p class="text-body-sm font-body-sm text-secondary mb-md">
+          Define what happens at specific times (24-hour format). Max 6 stages. Schedule is pushed directly to the LED hardware clock.
+        </p>
+
+        <div *ngIf="currentSchedule.rules.length === 0" class="text-center p-md bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg text-secondary text-body-md mb-md">
+          No time stages defined. Click Add Stage to begin.
+        </div>
+
+        <div class="space-y-md">
+          <div *ngFor="let rule of currentSchedule.rules; let i = index" class="flex flex-wrap md:flex-nowrap items-end gap-md p-md bg-surface-container-lowest border border-surface-variant rounded-lg">
+            
+            <div class="flex-1 flex flex-col gap-xs">
+              <label class="text-label-sm font-label-sm text-on-surface-variant font-semibold">Time (HH:mm)</label>
+              <input type="time" [(ngModel)]="rule.time" required class="w-full px-sm py-1.5 border border-outline-variant rounded-md bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-md">
+            </div>
+
+            <div class="flex-1 flex flex-col gap-xs">
+              <label class="text-label-sm font-label-sm text-on-surface-variant font-semibold">Action</label>
+              <select [(ngModel)]="rule.action" class="w-full px-sm py-1.5 border border-outline-variant rounded-md bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-md">
+                <option value="ON">Turn ON</option>
+                <option value="OFF">Turn OFF</option>
+                <option value="DIM">Dim Light</option>
+              </select>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-xs" *ngIf="rule.action === 'DIM' || rule.action === 'ON'">
+              <label class="text-label-sm font-label-sm text-on-surface-variant font-semibold">Brightness %</label>
+              <input type="number" [(ngModel)]="rule.brightness" min="1" max="100" class="w-full px-sm py-1.5 border border-outline-variant rounded-md bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-md">
+            </div>
+
+            <button (click)="removeRule(i)" class="w-10 h-10 shrink-0 flex items-center justify-center rounded text-secondary hover:bg-error/10 hover:text-error transition-colors mb-0.5">
+              <span class="material-symbols-outlined text-[20px]">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</ion-content>
+
+<!-- FOOTER FOR EDIT VIEW -->
+<ion-footer class="ion-no-border" *ngIf="isEditing">
+  <ion-toolbar class="bg-white border-t border-outline-variant px-sm py-xs">
+    <div class="flex justify-end gap-md">
+      <button (click)="cancelEdit()" class="px-md py-2 border border-outline-variant rounded-lg bg-surface text-secondary hover:bg-surface-container transition-colors text-label-md font-bold">
+        Cancel
+      </button>
+      <button (click)="saveSchedule()" class="flex items-center gap-sm px-md py-2 bg-primary text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity text-label-md font-bold">
+        <span class="material-symbols-outlined text-[18px]">save</span>
+        Save Profile
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

@@ -1,0 +1,90 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="history-content ion-padding">
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">Historical Data</h1>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-surface border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <!-- Site Filter -->
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+        <span class="text-body-md font-body-md text-secondary">Site:</span>
+        <select [(ngModel)]="selectedSite" (ngModelChange)="applySiteFilter()"
+          class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer outline-none">
+          <option value="All">All Sites</option>
+          <option value="Site 1">Site 1</option>
+          <option value="Site 2">Site 2</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="text-body-md font-body-md text-secondary">Device:</span>
+        <select [(ngModel)]="selectedDevEui" (ngModelChange)="onFilterChange()" class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer outline-none max-w-[200px] truncate">
+          <option *ngFor="let d of filteredDevices" [ngValue]="d.dev_eui">{{ d.name || d.dev_eui }}</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-sm">
+        <button (click)="previousDate()"
+                class="px-sm py-1 border border-outline-variant rounded bg-background transition-colors flex items-center justify-center text-secondary hover:border-primary hover:text-primary">
+          <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+        </button>
+        <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+          <span class="text-body-md font-body-md text-secondary">Date:</span>
+          <input type="date" [(ngModel)]="selectedDate" (ngModelChange)="onFilterChange()" class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer outline-none" />
+        </div>
+        <button (click)="nextDate()"
+                class="px-sm py-1 border border-outline-variant rounded bg-background transition-colors flex items-center justify-center text-secondary hover:border-primary hover:text-primary">
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm flex flex-col mb-xl">
+      <h3 class="text-title-md font-title-md text-on-surface mb-md">Real Time Graph</h3>
+      <div class="flex-1 min-h-[400px]">
+        <canvas #telemetryChart></canvas>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-x-auto">
+      <table class="w-full text-left border-collapse min-w-[800px]">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant text-label-sm font-label-sm text-secondary uppercase tracking-wider">
+            <th class="p-4 font-semibold">Time</th>
+            <th class="p-4 font-semibold">Battery %</th>
+            <th class="p-4 font-semibold">Battery V</th>
+            <th class="p-4 font-semibold">Solar V</th>
+            <th class="p-4 font-semibold">Consumption (W)</th>
+            <th class="p-4 font-semibold">LED Status</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-md font-body-md">
+          <tr *ngFor="let row of historyData" class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
+            <td class="p-4">{{ formatTimestamp(row.timestamp) }}</td>
+            <td class="p-4" [ngClass]="{'text-error': row.battery_percent < 20}">{{ row.battery_percent ?? '--' }}%</td>
+            <td class="p-4">{{ row.battery_voltage ?? '--' }}V</td>
+            <td class="p-4">{{ row.solar_panel_voltage ?? '--' }}V</td>
+            <td class="p-4">{{ row.consumption ?? '--' }}W</td>
+            <td class="p-4" [ngClass]="row.led_status > 0 ? 'text-primary' : 'text-secondary'">
+              {{ row.led_status > 0 ? 'ON' : 'OFF' }}
+            </td>
+          </tr>
+          <tr *ngIf="historyData.length === 0">
+            <td colspan="6" class="p-8 text-center text-secondary">
+              No historical data found for the selected date.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</ion-content>

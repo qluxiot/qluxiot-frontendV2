@@ -1,0 +1,123 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="alarms-content ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">Alarms</h1>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div *ngIf="isSuperAdmin && projects.length > 0" class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <!-- Project Filter -->
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors flex-1 min-w-[200px]">
+        <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+        <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()"
+                class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer w-full">
+          <option [ngValue]="null">All Projects</option>
+          <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Status</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Date & Time</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Device Name</th>
+              <th *ngIf="isAdmin" class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Serial Number</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Warning</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider">Location</th>
+              <th class="px-lg py-md text-label-md font-label-md text-secondary uppercase tracking-wider text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+
+            <!-- Loading -->
+            <tr *ngIf="isLoading">
+              <td [attr.colspan]="isAdmin ? 7 : 6" class="px-lg py-xl text-center text-secondary text-body-md italic">Loading alarms...</td>
+            </tr>
+
+            <!-- Empty State -->
+            <tr *ngIf="!isLoading && alarms.length === 0">
+              <td [attr.colspan]="isAdmin ? 7 : 6" class="px-lg py-xl text-center">
+                <div class="flex flex-col items-center gap-sm">
+                  <span class="material-symbols-outlined text-outline text-[40px]">check_circle</span>
+                  <span class="text-body-md font-body-md text-secondary">No alarms found! Your system is healthy.</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Alarm Rows -->
+            <tr *ngFor="let alarm of alarms" class="hover:bg-surface-container-low/50 transition-colors">
+
+              <!-- Status Badge -->
+              <td class="px-lg py-md">
+                <span *ngIf="alarm.is_handle === 0"
+                      class="px-sm py-xs rounded-full text-label-sm font-label-sm font-bold uppercase bg-error/10 text-error">
+                  Unhandled
+                </span>
+                <span *ngIf="alarm.is_handle === 1"
+                      class="px-sm py-xs rounded-full text-label-sm font-label-sm font-bold uppercase bg-success/10 text-success">
+                  Resolved
+                </span>
+              </td>
+
+              <!-- Date & Time -->
+              <td class="px-lg py-md text-body-md text-on-surface-variant">
+                {{ alarm.date | date:'yyyy-MM-dd':'+0800' }} {{ alarm.time }}
+              </td>
+
+              <!-- Device Name -->
+              <td class="px-lg py-md font-bold text-on-surface text-body-md">{{ alarm.name }}</td>
+
+              <!-- Serial -->
+              <td *ngIf="isAdmin" class="px-lg py-md">
+                <span class="font-mono text-body-sm bg-surface-container-low px-sm py-xs rounded text-secondary">{{ alarm.serial }}</span>
+              </td>
+
+              <!-- Warning -->
+              <td class="px-lg py-md text-body-md text-on-surface">{{ alarm.english }}</td>
+
+              <!-- Location -->
+              <td class="px-lg py-md">
+                <a *ngIf="alarm.latitude && alarm.longitude"
+                   [href]="'https://www.google.com/maps/search/?api=1&query=' + alarm.latitude + ',' + alarm.longitude"
+                   target="_blank"
+                   class="flex items-center gap-xs text-primary hover:underline text-label-md font-label-md font-semibold transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">location_on</span>
+                  Map
+                </a>
+                <span *ngIf="!alarm.latitude || !alarm.longitude"
+                      class="text-label-md text-secondary italic">Unknown</span>
+              </td>
+
+              <!-- Action -->
+              <td class="px-lg py-md text-right">
+                <button (click)="resolveAlarm(alarm.id)"
+                        [disabled]="alarm.is_handle === 1"
+                        class="flex items-center gap-xs px-md py-2 bg-success/10 text-success hover:bg-success/20 rounded text-label-md font-label-md font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed ml-auto">
+                  <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                  Mark Resolved
+                </button>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</ion-content>

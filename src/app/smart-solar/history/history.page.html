@@ -1,0 +1,156 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="history-content ion-padding">
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface">History</h1>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-lg mb-lg flex flex-wrap items-center gap-md">
+      <!-- Project Filter -->
+      <div *ngIf="isSuperAdmin && projects.length > 0" class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors flex-1 min-w-[200px]">
+        <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+        <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()"
+                class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer w-full">
+          <option [ngValue]="null">All Projects</option>
+          <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+
+      <!-- Device Selector -->
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors flex-1 min-w-[200px]">
+        <span class="material-symbols-outlined text-secondary text-[20px]">sensors</span>
+        <select [ngModel]="selectedDevice" (ngModelChange)="selectDevice($event)"
+                class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer w-full">
+          <option [ngValue]="d" *ngFor="let d of devices">{{ d.name || d.serial }}</option>
+          <option *ngIf="devices.length === 0" disabled>No devices available</option>
+        </select>
+      </div>
+
+      <!-- Date Selector with prev/next -->
+      <div class="flex items-center gap-sm">
+        <button (click)="prevDate()"
+                class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center text-secondary hover:border-primary hover:text-primary">
+          <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+        </button>
+        <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-secondary text-[20px]">calendar_today</span>
+          <input type="date" [(ngModel)]="selectedDate" (change)="fetchHistory()"
+                 class="text-body-md font-body-md text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer" />
+        </div>
+        <button (click)="nextDate()"
+                class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center text-secondary hover:border-primary hover:text-primary">
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- Interval Selector -->
+      <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <span class="material-symbols-outlined text-secondary text-[20px]">schedule</span>
+        <select class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
+                [(ngModel)]="selectedInterval" (change)="fetchHistory()">
+          <option value="30">Every 30 Minutes</option>
+          <option value="60">Every 1 Hour</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-container" *ngIf="selectedDevice">
+
+      <!-- Solar Chart -->
+      <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+        <div class="flex items-center gap-md px-lg py-md border-b border-outline-variant">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-primary text-[20px]">bolt</span>
+          </div>
+          <div>
+            <h3 class="text-title-md font-title-md text-on-surface">Solar PV Metrics</h3>
+            <p class="text-body-sm font-body-sm text-secondary">Voltage (V), Current (mA), and Solar PV (W) over time</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas baseChart [data]="solarChartData" [options]="chartOptions" [type]="lineChartType"></canvas>
+          <div class="empty-chart" *ngIf="solarChartData.labels?.length === 0">
+            <span class="material-symbols-outlined text-outline text-[48px]">bar_chart</span>
+            <p class="text-body-md text-secondary mt-sm">No data recorded for this date</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battery Chart -->
+      <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+        <div class="flex items-center gap-md px-lg py-md border-b border-outline-variant">
+          <div class="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]" style="color: #d97706;">battery_4_bar</span>
+          </div>
+          <div>
+            <h3 class="text-title-md font-title-md text-on-surface">Battery Metrics</h3>
+            <p class="text-body-sm font-body-sm text-secondary">Voltage (V), Current (mA), and Battery Percentage (%) over time</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas baseChart [data]="batteryChartData" [options]="chartOptions" [type]="lineChartType"></canvas>
+          <div class="empty-chart" *ngIf="batteryChartData.labels?.length === 0">
+            <span class="material-symbols-outlined text-outline text-[48px]">bar_chart</span>
+            <p class="text-body-md text-secondary mt-sm">No data recorded for this date</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Load Chart -->
+      <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+        <div class="flex items-center gap-md px-lg py-md border-b border-outline-variant">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f0fdf4;">
+            <span class="material-symbols-outlined text-[20px]" style="color: #16a34a;">lightbulb</span>
+          </div>
+          <div>
+            <h3 class="text-title-md font-title-md text-on-surface">Load Metrics</h3>
+            <p class="text-body-sm font-body-sm text-secondary">Voltage (V), Current (mA), and Brightness (%) over time</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas baseChart [data]="loadChartData" [options]="chartOptions" [type]="lineChartType"></canvas>
+          <div class="empty-chart" *ngIf="loadChartData.labels?.length === 0">
+            <span class="material-symbols-outlined text-outline text-[48px]">bar_chart</span>
+            <p class="text-body-md text-secondary mt-sm">No data recorded for this date</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Temperature Chart -->
+      <div class="bg-white border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+        <div class="flex items-center gap-md px-lg py-md border-b border-outline-variant">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f0f9ff;">
+            <span class="material-symbols-outlined text-[20px]" style="color: #0ea5e9;">thermometer</span>
+          </div>
+          <div>
+            <h3 class="text-title-md font-title-md text-on-surface">Temperature Metrics</h3>
+            <p class="text-body-sm font-body-sm text-secondary">Inner and Outer Temperature (°C) over time</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas baseChart [data]="tempChartData" [options]="chartOptions" [type]="lineChartType"></canvas>
+          <div class="empty-chart" *ngIf="tempChartData.labels?.length === 0">
+            <span class="material-symbols-outlined text-outline text-[48px]">bar_chart</span>
+            <p class="text-body-md text-secondary mt-sm">No data recorded for this date</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div class="flex flex-col items-center justify-center py-[80px] text-center" *ngIf="!selectedDevice">
+      <span class="material-symbols-outlined text-outline text-[64px] mb-md">monitoring</span>
+      <h3 class="text-headline-sm font-headline-sm text-on-surface mb-xs">No Device Selected</h3>
+      <p class="text-body-md font-body-md text-secondary">Please register or select a device to view its historical data.</p>
+    </div>
+
+  </main>
+</ion-content>

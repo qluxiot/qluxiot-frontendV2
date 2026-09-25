@@ -1,0 +1,377 @@
+.registry-content {
+  --background: #f6f8fb;
+}
+
+.page-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.page-header {
+  align-items: flex-end;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .import-progress-banner {
+    align-items: center;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    color: #1d4ed8;
+    display: flex;
+    font-size: 0.875rem;
+    font-weight: 600;
+    gap: 8px;
+    padding: 8px 14px;
+    width: 100%;
+
+    ion-icon { font-size: 18px; }
+  }
+
+  .eyebrow {
+    color: var(--ion-color-primary, #3880ff);
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    color: #1f2937;
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  ion-button {
+    min-height: 42px;
+  }
+}
+
+.toolbar-card {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+
+  ion-searchbar {
+    --background: #f8fafc;
+    --border-radius: 8px;
+    --box-shadow: none;
+    flex: 1;
+    padding: 0;
+  }
+}
+
+.result-count {
+  border-left: 1px solid #e5e7eb;
+  color: #64748b;
+  min-width: 128px;
+  padding-left: 14px;
+
+  strong {
+    color: #111827;
+    display: block;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.table-container {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  overflow-x: auto;
+
+  .data-table {
+    border-collapse: collapse;
+    min-width: 760px;
+    width: 100%;
+
+    th,
+    td {
+      border-bottom: 1px solid #edf2f7;
+      color: #334155;
+      font-size: 14px;
+      padding: 15px 16px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    tbody tr {
+      transition: background 120ms ease;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+.device-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.device-code {
+  color: #111827;
+  font-weight: 700;
+}
+
+.device-name {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.actions-heading {
+  width: 112px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 4px;
+
+  ion-button {
+    --border-radius: 8px;
+    height: 34px;
+    width: 34px;
+  }
+}
+
+.empty-state {
+  color: #64748b;
+  padding: 42px 16px;
+  text-align: center;
+
+  ion-icon {
+    color: #94a3b8;
+    display: block;
+    font-size: 32px;
+    margin: 0 auto 8px;
+  }
+
+  strong {
+    color: #334155;
+    display: block;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  span {
+    display: block;
+    font-size: 14px;
+  }
+}
+
+.section-title {
+  border-bottom: 1px solid #e5e7eb;
+  color: #2563eb;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 22px 0 8px;
+  padding-bottom: 8px;
+}
+
+.modal-content {
+  --background: #f8fafc;
+
+  ion-item {
+    --background: #ffffff;
+    --border-color: #e5e7eb;
+    --border-radius: 8px;
+    --inner-padding-end: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+}
+
+.modal-actions {
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  bottom: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding: 14px 0 2px;
+  position: sticky;
+}
+
+
+/* ── Device Type Badge ── */
+.type-badge {
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 3px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.type-Zhaga4G   { background: #dbeafe; color: #1d4ed8; }
+.type-ZhagaLora { background: #ede9fe; color: #6d28d9; }
+.type-Nema4G    { background: #dcfce7; color: #15803d; }
+.type-NemaLora  { background: #fef9c3; color: #854d0e; }
+.type-Gateway   { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+/* ── Gateway Row ── */
+.gateway-row {
+  background: #fafafa;
+}
+.gateway-row:hover {
+  background: #f3f4f6 !important;
+}
+
+/* ── Gateway Signal Icon ── */
+.gateway-signal {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &.gateway-online {
+    color: #16a34a;
+  }
+
+  .signal-online  { color: #16a34a; }
+  .signal-offline { color: #9ca3af; }
+}
+
+/* ── Gateway Notice in Modal ── */
+.gateway-notice {
+  align-items: flex-start;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  color: #0369a1;
+  display: flex;
+  font-size: 0.85em;
+  gap: 8px;
+  line-height: 1.5;
+  margin: 10px 0 4px;
+  padding: 10px 14px;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    margin-top: 1px;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header,
+  .toolbar-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .result-count {
+    border-left: 0;
+    border-top: 1px solid #e5e7eb;
+    padding-left: 0;
+    padding-top: 12px;
+  }
+
+  .table-container {
+    overflow-x: visible;
+
+    .data-table {
+      min-width: 0;
+
+      thead {
+        display: none;
+      }
+
+      tr,
+      td {
+        display: block;
+      }
+
+      tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 12px 14px;
+      }
+
+      td {
+        align-items: center;
+        border-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+      }
+
+      td::before {
+        color: #64748b;
+        content: attr(data-label);
+        font-size: 12px;
+        font-weight: 700;
+        margin-right: 14px;
+        text-transform: uppercase;
+      }
+
+      .empty-state {
+        display: block;
+      }
+
+      .empty-state::before {
+        content: none;
+      }
+    }
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+}

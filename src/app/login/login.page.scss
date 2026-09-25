@@ -1,0 +1,218 @@
+ion-content {
+  --background: none;
+  background-color: #030a0d;
+}
+
+.login-background {
+  width: 100vw;
+  height: 100vh;
+  background: url('../../assets/cyber_login_bg1.png') no-repeat center center / cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+}
+
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* Align elements to the right just like the image */
+  width: 90%;
+  max-width: 1100px;
+  box-sizing: border-box;
+}
+
+
+.login-box {
+  background: rgba(4, 21, 28, 0.8);
+  border: 2px solid #00f0ff;
+  border-radius: 12px;
+  padding: 2.5rem 2.5rem;
+  width: 440px;
+  margin-top: 250px;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.1);
+  backdrop-filter: blur(8px);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Cyber corner decors to match the image panel outline details */
+.login-box::before,
+.login-box::after {
+  content: '';
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-color: #00f0ff;
+  border-style: solid;
+}
+
+.login-box::before {
+  top: -2px;
+  left: -2px;
+  border-width: 2px 0 0 2px;
+}
+
+.login-box::after {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 2px 2px 0;
+}
+
+.box-title {
+  font-size: 1.5rem;
+  font-weight: 400;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 2.5rem;
+  letter-spacing: 1.5px;
+  color: #e2f9ff;
+}
+
+.input-group {
+  margin-bottom: 1.8rem;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background: rgba(1, 35, 45, 0.5);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.input-container:focus-within {
+  border-color: #00f0ff !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+  background: rgba(1, 35, 45, 0.7) !important;
+}
+
+.input-icon {
+  color: #00f0ff;
+  font-size: 1.3rem;
+  margin-right: 0.8rem;
+}
+
+.input-icon-toggle {
+  color: rgba(0, 240, 255, 0.6);
+  font-size: 1.3rem;
+  cursor: pointer;
+  margin-left: 0.8rem;
+  transition: color 0.2s;
+}
+
+.input-icon-toggle:hover {
+  color: #00f0ff;
+}
+
+.cyber-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  font-size: 1rem !important;
+  width: 100% !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: none !important;
+}
+
+.cyber-input:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.cyber-input::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.error-msg {
+  color: #ff5252;
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+  padding-left: 0.2rem;
+}
+
+.general-error {
+  text-align: center;
+  margin-bottom: 1rem;
+  background: rgba(255, 82, 82, 0.15);
+  border: 1px solid rgba(255, 82, 82, 0.3);
+  padding: 0.6rem;
+  border-radius: 4px;
+}
+
+.cyber-btn {
+  width: 100%;
+  background: #00c2ff !important;
+  border: none !important;
+  border-radius: 4px;
+  color: #030a0d !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+  box-shadow: 0 0 15px rgba(0, 194, 255, 0.3) !important;
+  margin-top: 1rem;
+}
+
+.cyber-btn:hover:not(:disabled) {
+  background: #00f0ff;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.cyber-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.cyber-btn:disabled {
+  background: rgba(0, 194, 255, 0.3);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 1.8rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.flag-icon {
+  margin-left: 0.5rem;
+  margin-right: 0.3rem;
+  font-size: 1.1rem;
+}
+
+.lang-text {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .login-wrapper {
+    align-items: center;
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem 1.5rem;
+  }
+
+  .login-background {
+    background: url('../../assets/mobile_login_bg.png') no-repeat center center / cover;
+  }
+}

@@ -1,0 +1,114 @@
+<div id="pdf-report-container" class="report-wrapper" *ngIf="data">
+  <div class="report-header">
+    <div class="report-title">
+      <h1>
+        <span *ngIf="data.type === 'solar'">Smart Solar </span>
+        <span *ngIf="data.type === 'bertam'">Bertam Smart Solar </span>
+        <span *ngIf="data.type === 'led'">Smart LED Streetlight </span>
+        <span *ngIf="!data.type">Device </span>
+        Overview Report
+      </h1>
+      <h2>Project: {{ data.project.name }}</h2>
+    </div>
+    <div class="report-meta">
+      <p><strong>Time Range:</strong> {{ data.timeRange.range }}</p>
+      <p><strong>Generated At:</strong> {{ data.timeRange.generatedAt | date:'medium' }}</p>
+    </div>
+  </div>
+
+  <div class="report-section" *ngIf="data.led">
+    <h3>Smart LED Streetlight Breakdown</h3>
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <span class="metric-label">Total LED Units</span>
+        <span class="metric-value">{{ data.led.totalDevices }}</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Power Consumed</span>
+        <span class="metric-value">{{ data.led.totalPowerConsumption | number:'1.0-2' }} kWh</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">LED Alarms</span>
+        <span class="metric-value">{{ data.led.alarms }}</span>
+      </div>
+    </div>
+
+    <h4>Lighting Schedule</h4>
+    <table class="schedule-table" *ngIf="data.led.lightingSchedule?.length > 0">
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Time</th>
+          <th>Power/Dim Level</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of data.led.lightingSchedule">
+          <td>{{ s.type }}</td>
+          <td>{{ s.time }}</td>
+          <td>{{ s.value }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-schedule" *ngIf="!data.led.lightingSchedule?.length">No schedule defined.</div>
+
+    <div class="impact-grid">
+      <div class="impact-box">
+        <span class="impact-label">Estimated Cost</span>
+        <span class="impact-value">RM {{ data.led.estimatedCostRM | number:'1.0-2' }}</span>
+        <span class="impact-sub">Based on TNB Tariff G (RM 0.192/kWh)</span>
+      </div>
+      <div class="impact-box">
+        <span class="impact-label">CO₂ Prevented</span>
+        <span class="impact-value">{{ data.led.co2PreventedKg | number:'1.0-2' }} kg</span>
+        <span class="impact-sub">vs. traditional HPS lamps (0.65 kg/kWh)</span>
+      </div>
+      <div class="impact-box">
+        <span class="impact-label">Cost Saved</span>
+        <span class="impact-value text-success">RM {{ data.led.costSavedRM | number:'1.0-2' }}</span>
+        <span class="impact-sub">vs. traditional 250W HPS lamps</span>
+      </div>
+    </div>
+
+    <h4>Historical Power Consumption</h4>
+    <div class="chart-container">
+      <canvas #ledChart></canvas>
+    </div>
+  </div>
+
+  <div class="report-section" *ngIf="data.solar || data.bertam || data.uc100">
+    <h3>Smart Solar Breakdown</h3>
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <span class="metric-label">Total Solar Units</span>
+        <span class="metric-value">{{ (data.solar || data.bertam || data.uc100).total }}</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Low Battery</span>
+        <span class="metric-value">{{ (data.solar || data.bertam || data.uc100).lowBattery }}</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">Solar Alarms</span>
+        <span class="metric-value">{{ (data.solar || data.bertam || data.uc100).alarms }}</span>
+      </div>
+    </div>
+
+    <div class="impact-grid">
+      <div class="impact-box">
+        <span class="impact-label">Money Saved</span>
+        <span class="impact-value text-success">RM {{ ((data.solar || data.bertam || data.uc100).totalMoneySavedRM || (data.solar || data.bertam || data.uc100).moneySavedRM) | number:'1.0-2' }}</span>
+        <span class="impact-sub">vs. connecting to TNB grid (RM 0.192/kWh)</span>
+      </div>
+      <div class="impact-box">
+        <span class="impact-label">CO₂ Prevented</span>
+        <span class="impact-value">{{ ((data.solar || data.bertam || data.uc100).totalCo2PreventedKg || (data.solar || data.bertam || data.uc100).co2PreventedKg) | number:'1.0-2' }} kg</span>
+        <span class="impact-sub">Clean solar vs. grid energy (0.65 kg/kWh)</span>
+      </div>
+    </div>
+
+    <h4>Historical Green Energy Generated</h4>
+    <div class="chart-container">
+      <canvas #solarChart></canvas>
+    </div>
+  </div>
+</div>

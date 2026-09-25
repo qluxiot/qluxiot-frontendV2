@@ -1,0 +1,218 @@
+/* ===== Sidebar Styles ===== */
+ion-menu {
+  border-right: 1px solid #dde3e9;
+}
+
+.sidebar-content {
+  --background: #ffffff;
+}
+
+.sidebar-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Header block: greeting + username */
+.sidebar-header {
+  min-height: 110px; /* Set this to match your custom toolbar's height */
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e8ecef;
+  background-color: #f3f5f7;
+  box-sizing: border-box;
+}
+
+.greeting-text {
+  color: #1a2b3c;
+  font-size: 1.22rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.user-name {
+  color: #5a6877;
+  font-size: 1.05rem;
+  margin: 3px 0 0 0;
+  font-weight: 400;
+}
+
+/* MBS Admin Background Logo */
+.mbs-admin-bg {
+  position: relative;
+  z-index: 1;
+}
+
+.mbs-admin-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('../assets/mbs-logo.svg');
+  background-repeat: no-repeat;
+  background-position: center right 10px;
+  background-size: contain;
+  opacity: 0.4; /* Adjust this value (0.0 to 1.0) to make it more or less visible */
+  z-index: -1;
+}
+
+/* Flex body: menu grows, footer stays pinned */
+.menu-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0; /* Key to enable inner overflow scrolling in flex layouts */
+  overflow: hidden;
+}
+
+.menu-list {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.menu-item {
+  --background: transparent;
+  --background-hover: #e8ecf0;
+  --color: #3d4f5e;
+  --border-radius: 0;
+  --min-height: 42px;
+  --padding-start: 14px;
+  --inner-padding-end: 8px;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.menu-icon {
+  color: #6b7f8f;
+  font-size: 1.05rem;
+  margin-right: 8px;
+}
+
+.menu-label {
+  font-size: 0.85rem;
+}
+
+/* Active item: dark navy to match custom header */
+.active-item {
+  --background: #e8eff5 !important;
+  --color: #1B2B3A !important;
+  border-left: 3px solid #1B2B3A !important;
+
+  .menu-icon {
+    color: #1B2B3A !important;
+  }
+}
+
+/* Logout pinned to bottom */
+.sidebar-footer {
+  border-top: 1px solid #e8ecef;
+  background: #f3f5f7;
+  flex-shrink: 0;
+}
+
+.logout-item {
+  --background: transparent;
+  --background-hover: #fdf2f2;
+  --color: #dc3545 !important;
+  --border-radius: 0;
+  --min-height: 42px;
+  --padding-start: 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.logout-icon {
+  color: #dc3545 !important;
+  font-size: 1.05rem;
+  margin-right: 8px;
+}
+
+ion-split-pane {
+  --border: none;
+}
+
+/* ===== Nested Accordion & Submenu Styles ===== */
+ion-accordion-group {
+  background: transparent;
+}
+
+ion-accordion {
+  border-bottom: 1px solid #f0f2f5;
+  background: transparent;
+}
+
+.sidebar-accordion-group {
+  .menu-item.header-item {
+    border-bottom: none;
+    --min-height: 42px;
+  }
+}
+
+/* Submenu container (Tier 2) */
+.submenu-container {
+  background: #fcfdfe;
+}
+
+.submenu-item {
+  --background: transparent;
+  --background-hover: #e8ecf0;
+  --color: #4b5563;
+  --min-height: 38px;
+  --padding-start: 32px; /* Indented from level 1 */
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-bottom: 1px solid #f9fafb;
+}
+
+/* Nested accordion */
+.nested-accordion-group {
+  .submenu-item.nested-header-item {
+    border-bottom: none;
+  }
+}
+
+/* Submodules (Tier 3) */
+.submodule-container {
+  background: #f7fafc;
+}
+
+.submodule-item {
+  --background: transparent;
+  --background-hover: #e2e8f0;
+  --color: #4b5563;
+  --min-height: 36px;
+  --padding-start: 46px; /* Indented further */
+  font-size: 0.78rem;
+  font-weight: 400;
+  border-bottom: 1px solid #f1f5f9;
+
+  .bullet {
+    margin-right: 8px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+}
+
+/* Active submodule (Level 3 Active State) */
+.active-submodule {
+  --background: #e8eff5 !important;
+  --color: #1B2B3A !important;
+  font-weight: 600 !important;
+  border-left: 3px solid #1B2B3A !important;
+
+  .bullet {
+    color: #1B2B3A !important;
+  }
+}

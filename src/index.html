@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>QConnect | Qlux Smart IoT System</title>
+  <meta name="description" content="Login to QConnect, the central dashboard for the Qlux Smart IoT System. Manage and monitor your smart devices securely." />
+  <meta name="keywords" content="qconnect, qlux, iot, smart system, dashboard, login" />
+  <meta name="google-site-verification" content="JiVj6YGREtA4ZrKMbBVVeVO8fC4mfbThIfmcMOeI7t0" />
+  
+  <!-- SEO: Tell Google the Site Name and Image -->
+  <meta property="og:site_name" content="QConnect" />
+  <meta property="og:image" content="https://qconnect-qlux.netlify.app/assets/logo.jpg" />
+  <meta property="og:image:alt" content="QConnect Logo" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:image" content="https://qconnect-qlux.netlify.app/assets/logo.jpg" />
+  
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "QConnect",
+      "url": "https://qconnect-qlux.netlify.app/",
+      "image": "https://qconnect-qlux.netlify.app/assets/logo.jpg"
+    }
+  </script>
+
+  <base href="/" />
+
+  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+
+  <link rel="icon" type="image/jpg" href="assets/logo.jpg" />
+  <link rel="apple-touch-icon" href="assets/logo.jpg" />
+
+  <!-- add to homescreen for ios -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- PWA Setup -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Tailwind & Fonts -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "surface-dim": "#ccdaff",
+                    "background": "#faf9ff",
+                    "tertiary-fixed-dim": "#65dca4",
+                    "on-tertiary-fixed-variant": "#005235",
+                    "on-primary-fixed-variant": "#0040a2",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#0c56d0",
+                    "surface-container": "#e9edff",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#c4d2ff",
+                    "inverse-on-surface": "#edf0ff",
+                    "inverse-primary": "#b2c5ff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#72e9af",
+                    "surface-container-high": "#e1e8ff",
+                    "secondary-container": "#d4e0f8",
+                    "on-surface-variant": "#434654",
+                    "on-background": "#051a3e",
+                    "primary-container": "#0052cc",
+                    "on-tertiary-fixed": "#002113",
+                    "outline": "#737685",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#d7e3fb",
+                    "outline-variant": "#c3c6d6",
+                    "primary-fixed-dim": "#b2c5ff",
+                    "surface-bright": "#faf9ff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#576377",
+                    "inverse-surface": "#1d3054",
+                    "primary": "#003d9b",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-variant": "#d8e2ff",
+                    "surface-container-highest": "#d8e2ff",
+                    "primary-fixed": "#dae2ff",
+                    "tertiary-fixed": "#82f9be",
+                    "tertiary": "#004e32",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#bbc7de",
+                    "secondary": "#535f73",
+                    "surface-container-low": "#f1f3ff",
+                    "surface": "#faf9ff",
+                    "on-secondary-fixed-variant": "#3b475b",
+                    "tertiary-container": "#006844",
+                    "on-primary": "#ffffff",
+                    "on-surface": "#051a3e",
+                    "on-primary-fixed": "#001848",
+                    "on-secondary-fixed": "#101c2d",
+                    "success": "#16a34a",
+                    "on-success": "#ffffff",
+                    "warning": "#eab308",
+                    "on-warning": "#ffffff"
+                },
+                "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+                },
+                "spacing": {
+                    "sm": "0.5rem",
+                    "lg": "1.5rem",
+                    "xl": "2rem",
+                    "md": "1rem",
+                    "gutter": "1rem",
+                    "margin-mobile": "1rem",
+                    "base": "4px",
+                    "margin-desktop": "2rem",
+                    "xs": "0.25rem"
+                },
+                "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+                },
+                "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                }
+            },
+        },
+    }
+  </script>
+</head>
+
+<body>
+  <app-root></app-root>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+
+</html>

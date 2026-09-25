@@ -1,0 +1,64 @@
+<ion-content [fullscreen]="true">
+  <div class="login-background">
+    <div class="login-wrapper">
+      
+      <div class="login-box">
+        <h2 class="box-title">User login</h2>
+        
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+          <div class="input-group">
+            <div class="input-container">
+              <ion-icon name="person-outline" class="input-icon"></ion-icon>
+              <input 
+                type="text" 
+                placeholder="Username" 
+                formControlName="username" 
+                required 
+                class="cyber-input"
+              />
+            </div>
+            <div class="error-msg" *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.errors?.['required']">
+              Username is required
+            </div>
+          </div>
+
+          <div class="input-group">
+            <div class="input-container">
+              <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+              <input 
+                [type]="showPassword ? 'text' : 'password'" 
+                placeholder="Password" 
+                formControlName="password" 
+                required 
+                class="cyber-input"
+              />
+              <ion-icon 
+                [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" 
+                class="input-icon-toggle"
+                (click)="togglePassword()">
+              </ion-icon>
+            </div>
+            <div class="error-msg" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']">
+              Password is required
+            </div>
+          </div>
+
+          <div class="error-msg general-error" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+
+          <button type="submit" class="cyber-btn" [disabled]="loginForm.invalid || isLoading">
+            <span *ngIf="!isLoading">Login</span>
+            <span *ngIf="isLoading">Authenticating...</span>
+          </button>
+        </form>
+
+        <!-- <div class="language-selector">
+          <span>Language: </span>
+          <span class="flag-icon">🇺🇸</span>
+          <span class="lang-text">English</span>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,127 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="user-container">
+    
+    <!-- Title / Breadcrumb path -->
+    <!-- <div class="breadcrumb-header">
+      <span class="parent-path">User</span>
+      <span class="separator">/</span>
+      <span class="parent-path">Project</span>
+      <span class="separator">/</span>
+      <span class="current-path">Management</span>
+    </div> -->
+
+    <!-- Project Section -->
+    <div class="criteria-card">
+      <h2 class="section-title">Project Management</h2>
+      <div class="criteria-grid">
+        <div class="field-group">
+          <label>Search Projects</label>
+          <input type="text" class="custom-input" placeholder="Search by name" [(ngModel)]="searchName" (ngModelChange)="onSearch()" />
+        </div>
+
+        <div class="actions-group" style="align-self: flex-end; margin-left: auto;">
+          <ion-button fill="solid" color="primary" class="icon-btn" title="Add Project" (click)="openModal()">
+            <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data / Operations Table Section -->
+    <div class="table-card">
+      <div class="table-operations">
+        <div class="operations-left">
+          <span class="total-count">Project Listing: <strong>{{ projects.length }}</strong></span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Project Name</th>
+              <th>Location</th>
+              <th>Description</th>
+              <th>Created Datetime</th>
+              <th>Updated Datetime</th>
+              <th style="text-align: center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let project of pagedProjects; let i = index">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td class="bold-text">{{ project.name }}</td>
+              <td>{{ project.location || '-' }}</td>
+              <td>{{ project.description || '-' }}</td>
+              <td class="time-text">{{ project.created_at | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+              <td class="time-text">{{ project.updated_at | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+              <td class="action-cells">
+                <button class="action-btn edit" title="Edit" (click)="openModal(project)">📝</button>
+                <button class="action-btn delete" title="Delete" (click)="deleteProject(project.id)">🗑️</button>
+              </td>
+            </tr>
+            <tr *ngIf="pagedProjects.length === 0">
+              <td colspan="7" style="text-align: center; padding: 20px;">No projects found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="table-pagination">
+        <div class="page-size-selector">
+          <select [(ngModel)]="pageSize" (ngModelChange)="setPageSize($event)">
+            <option [value]="10">10/page</option>
+            <option [value]="25">25/page</option>
+            <option [value]="50">50/page</option>
+          </select>
+        </div>
+        <div class="pagination-controls">
+          <button class="arrow-btn" [disabled]="currentPage === 1" (click)="previousPage()">&lt;</button>
+          <button class="page-num active">{{ currentPage }}</button>
+          <button class="arrow-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">&gt;</button>
+          <span class="goto-txt">Page {{ currentPage }} / {{ totalPages }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()" class="premium-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="modal-toolbar">
+          <ion-title class="modal-title">{{ isEditMode ? 'Edit Project' : 'Add New Project' }}</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      
+      <ion-content class="ion-padding modal-content">
+        <div class="form-container">
+          <div class="modal-field-group">
+            <label class="modal-label">Project Name</label>
+            <input type="text" class="custom-input full-width" [(ngModel)]="currentProject.name" placeholder="Enter project name" />
+          </div>
+
+          <div class="modal-field-group">
+            <label class="modal-label">Location</label>
+            <input type="text" class="custom-input full-width" [(ngModel)]="currentProject.location" placeholder="e.g. KLIA Terminal 1" />
+          </div>
+
+          <div class="modal-field-group">
+            <label class="modal-label">Description</label>
+            <textarea class="custom-input full-width" [(ngModel)]="currentProject.description" placeholder="Project details or scope..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-action-buttons">
+          <button class="modal-btn cancel-btn" (click)="closeModal()">Cancel</button>
+          <button class="modal-btn save-btn" (click)="saveProject()">Save Changes</button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
