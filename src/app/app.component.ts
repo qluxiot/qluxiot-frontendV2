@@ -72,6 +72,10 @@ export class AppComponent implements OnInit {
     return this.authService.isJkrShAdmin;
   }
 
+  get isJohorPortAdmin(): boolean {
+    return this.authService.isJohorPortAdmin;
+  }
+
   get isBertamEnabled(): boolean {
     // Enabled only for super admin (projectId === null) or user whose name is 'MBSP' (case-insensitive)
     const currentUser = this.authService.getCurrentUser();

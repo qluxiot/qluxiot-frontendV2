@@ -47,7 +47,7 @@
                             <ion-label>Overview</ion-label>
                           </ion-item>
                         </ion-menu-toggle>
-                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
                           <ion-item routerLink="/smart-led/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
                             <span class="bullet">-</span>
                             <ion-label>Device Registration</ion-label>
@@ -89,7 +89,7 @@
                             <ion-label>Overview</ion-label>
                           </ion-item>
                         </ion-menu-toggle>
-                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
                           <ion-item routerLink="/smart-solar/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
                             <span class="bullet">-</span>
                             <ion-label>Device Registration</ion-label>
@@ -118,7 +118,7 @@
                   </ion-accordion-group>
 
                   <!-- UC100 Solar (HiveMQ / Isurian) -->
-                  <ion-accordion-group *ngIf="hasPermission('UC100_SOLAR.LISTING') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                  <ion-accordion-group *ngIf="hasPermission('UC100_SOLAR.LISTING') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
                     <ion-accordion value="uc100" style="background: transparent;">
                       <ion-item slot="header" class="submodule-item" lines="none">
                         <span class="bullet">•</span>
@@ -203,7 +203,7 @@
                       <ion-label>Alarms Notification</ion-label>
                     </ion-item>
                   </ion-menu-toggle>
-                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('NOTIFICATION_SETUP.WHATSAPP_MANAGE') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('NOTIFICATION_SETUP.WHATSAPP_MANAGE') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
                     <ion-item routerLink="/notification-settings/whatsapp-setup" routerLinkActive="active-submodule"
                       [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
                       <span class="bullet">•</span>
@@ -216,7 +216,7 @@
 
             <!-- User Accordion -->
             <ion-accordion-group class="sidebar-accordion-group"
-              *ngIf="hasAnyPermission(['USER_MANAGEMENT.LISTING', 'ROLE_MANAGEMENT.LISTING', 'ROLE_PERMISSION.LISTING']) && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin">
+              *ngIf="hasAnyPermission(['USER_MANAGEMENT.LISTING', 'ROLE_MANAGEMENT.LISTING', 'ROLE_PERMISSION.LISTING']) && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
               <ion-accordion value="user" class="sidebar-accordion">
                 <ion-item slot="header" class="menu-item header-item" lines="none">
                   <ion-icon slot="start" name="people-outline" class="menu-icon"></ion-icon>

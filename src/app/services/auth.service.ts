@@ -126,6 +126,17 @@ export class AuthService {
     return !!isMatch;
   }
 
+  get isJohorPortAdmin(): boolean {
+    const username = this.getUsername();
+    const name = localStorage.getItem('name');
+    
+    const isMatch = 
+      (username && username.toLowerCase().trim() === 'johorport') || 
+      (name && name.toLowerCase().trim() === 'johorport');
+      
+    return !!isMatch;
+  }
+
   readonly MBS_CLONE_MAPPING: { [key: string]: { name: string; serial: string } } = {
     'njLF5KOf8OuAT0Rm2025050817810531': { name: '2. Solar S1', serial: 'njpyH3OcPzON6UA22025050832921133' }
   };
