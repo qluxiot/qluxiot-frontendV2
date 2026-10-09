@@ -1,0 +1,198 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="cctv-content ion-padding">
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface m-0">CCTV Monitoring</h1>
+      </div>
+      <div class="header-controls">
+        <div class="time-display">
+          <ion-icon name="time-outline"></ion-icon>
+          {{ currentTime }}
+        </div>
+        <div class="header-badge">
+          <span class="live-dot"></span>
+          <span class="live-text">LIVE FEED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Row -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(27,43,58,0.08);">
+          <ion-icon name="videocam-outline" style="color: #1b2b3a;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value">{{ totalCameras }}</div>
+          <div class="summary-label">Total Cameras</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(16,185,129,0.1);">
+          <ion-icon name="eye-outline" style="color: #10b981;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color: #10b981;">{{ onlineCameras }}</div>
+          <div class="summary-label">Online</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
+          <ion-icon name="videocam-off-outline" style="color: #ef4444;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color: #ef4444;">{{ offlineCameras }}</div>
+          <div class="summary-label">Offline</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
+          <span class="material-symbols-outlined" style="color: #ef4444; font-size: 22px;">fiber_manual_record</span>
+        </div>
+        <div>
+          <div class="summary-value" style="color: #ef4444;">{{ recordingCameras }}</div>
+          <div class="summary-label">Recording</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & View Controls -->
+    <div class="controls-bar">
+      <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="selectedFilter === 'all'" (click)="selectedFilter = 'all'">
+          All ({{ totalCameras }})
+        </button>
+        <button class="filter-tab" [class.active]="selectedFilter === 'online'" (click)="selectedFilter = 'online'">
+          Online ({{ onlineCameras }})
+        </button>
+        <button class="filter-tab" [class.active]="selectedFilter === 'offline'" (click)="selectedFilter = 'offline'">
+          Offline ({{ offlineCameras }})
+        </button>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grid view">
+          <span class="material-symbols-outlined" style="font-size: 20px;">grid_view</span>
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="List view">
+          <span class="material-symbols-outlined" style="font-size: 20px;">view_list</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Camera Grid -->
+    <div class="cameras-grid" [class.list-view]="viewMode === 'list'">
+      <div class="camera-card" *ngFor="let cam of filteredCameras" [class.offline]="!cam.isOnline">
+
+        <!-- Video Feed Placeholder -->
+        <div class="video-feed" [style.background]="cam.thumbnailGradient">
+
+          <iframe *ngIf="cam.isOnline && cam.safeStreamUrl" [src]="cam.safeStreamUrl" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1;"></iframe>
+
+          <!-- Offline Overlay -->
+          <div *ngIf="!cam.isOnline" class="offline-overlay">
+            <ion-icon name="videocam-off-outline" class="offline-icon"></ion-icon>
+            <span>No Signal</span>
+          </div>
+
+          <!-- Scanline effect for online cams -->
+          <div *ngIf="cam.isOnline" class="scanline" style="z-index: 2; pointer-events: none;"></div>
+
+          <!-- Camera scan animation -->
+          <div *ngIf="cam.isOnline" class="video-overlay" style="z-index: 3; pointer-events: none;">
+            <!-- Corner brackets -->
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+
+            <!-- Center icon (hide when stream is active) -->
+            <div class="feed-center" *ngIf="!cam.streamUrl">
+              <ion-icon name="play-circle-outline" class="feed-play-icon"></ion-icon>
+            </div>
+
+            <!-- HUD overlays -->
+            <div class="hud-top">
+              <span class="hud-resolution">{{ cam.resolution }}</span>
+              <span class="hud-fps">{{ cam.fps }}fps</span>
+            </div>
+            <div class="hud-bottom">
+              <span class="hud-timestamp">{{ currentTime }}</span>
+              <span *ngIf="cam.detectionEnabled" class="hud-detection">
+                <span class="detection-dot"></span> MOTION DETECT
+              </span>
+            </div>
+          </div>
+
+          <!-- Recording Badge -->
+          <div class="recording-badge" [ngClass]="getRecordingBadgeClass(cam.recordingStatus)" style="z-index: 4; pointer-events: none;">
+            {{ getRecordingLabel(cam.recordingStatus) }}
+          </div>
+        </div>
+
+        <!-- Camera Info -->
+        <div class="camera-info">
+          <div class="camera-title-row">
+            <div>
+              <div class="camera-name">{{ cam.name }}</div>
+              <div class="camera-pole">{{ cam.poleId }}</div>
+            </div>
+            <div class="camera-online-dot" [class.online]="cam.isOnline"></div>
+          </div>
+
+          <div class="camera-location">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ cam.location }}
+          </div>
+
+          <div class="camera-stats" *ngIf="cam.isOnline">
+            <div class="stat-item">
+              <span class="material-symbols-outlined stat-icon">directions_run</span>
+              <div>
+                <div class="stat-value">{{ cam.motionCount }}</div>
+                <div class="stat-label">Motions Today</div>
+              </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <ion-icon name="time-outline" class="stat-ion-icon"></ion-icon>
+              <div>
+                <div class="stat-value">{{ cam.lastMotion }}</div>
+                <div class="stat-label">Last Motion</div>
+              </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <ion-icon name="shield-checkmark-outline" class="stat-ion-icon"
+                [style.color]="cam.detectionEnabled ? '#10b981' : '#94a3b8'"></ion-icon>
+              <div>
+                <div class="stat-value" [style.color]="cam.detectionEnabled ? '#10b981' : '#94a3b8'">
+                  {{ cam.detectionEnabled ? 'Active' : 'Off' }}
+                </div>
+                <div class="stat-label">AI Detection</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="camera-offline-info" *ngIf="!cam.isOnline">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>Camera offline — last active {{ cam.lastMotion }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Integration Note -->
+    <!-- <div class="integration-note">
+      <span class="material-symbols-outlined">info</span>
+      <div>
+        <strong>Data Integrated</strong> — The CCTV feeds are dynamically fetched from the backend API, allowing you to easily configure stream URLs for live integration.
+      </div>
+    </div> -->
+
+  </main>
+</ion-content>

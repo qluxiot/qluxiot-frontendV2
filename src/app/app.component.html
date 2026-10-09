@@ -156,6 +156,32 @@
               </ion-accordion>
             </ion-accordion-group>
 
+            <!-- Smart Pole Accordion -->
+            <ion-accordion-group class="sidebar-accordion-group"
+              *ngIf="hasPermission('SMART_CITY_POLE.LISTING')">
+              <ion-accordion value="smart-pole" class="sidebar-accordion">
+                <ion-item slot="header" class="menu-item header-item" lines="none">
+                  <ion-icon slot="start" name="radio-outline" class="menu-icon"></ion-icon>
+                  <ion-label class="menu-label">Smart Pole</ion-label>
+                </ion-item>
+
+                <div slot="content" class="submenu-container">
+                  <ion-menu-toggle auto-hide="false">
+                    <ion-item routerLink="/smart-pole/cctv/monitoring" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>CCTV</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                  <ion-menu-toggle auto-hide="false">
+                    <ion-item routerLink="/smart-pole/environmental/monitoring" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
+                      <span class="bullet">•</span>
+                      <ion-label>Environmental Sensor</ion-label>
+                    </ion-item>
+                  </ion-menu-toggle>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+
             <!-- Bertam Standalone Menu -->
             <ion-accordion-group class="sidebar-accordion-group" *ngIf="isBertamEnabled">
               <ion-accordion value="bertam-solution" class="sidebar-accordion">

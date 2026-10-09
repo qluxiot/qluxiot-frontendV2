@@ -16,7 +16,7 @@ import {
   IonAccordion
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { homeOutline, logOutOutline, personCircleOutline, cubeOutline, bulbOutline, flashOutline, settingsOutline, buildOutline, peopleOutline, addOutline, alertOutline, notificationsOutline, locationOutline } from 'ionicons/icons';
+import { homeOutline, logOutOutline, personCircleOutline, cubeOutline, bulbOutline, flashOutline, settingsOutline, buildOutline, peopleOutline, addOutline, alertOutline, notificationsOutline, locationOutline, radioOutline, videocamOutline } from 'ionicons/icons';
 import { Observable } from 'rxjs';
 import { AuthService } from './services/auth.service';
 
@@ -104,7 +104,9 @@ export class AppComponent implements OnInit {
       addOutline,
       alertOutline,
       notificationsOutline,
-      locationOutline
+      locationOutline,
+      radioOutline,
+      videocamOutline
     });
   }
 

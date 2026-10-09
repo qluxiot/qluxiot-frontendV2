@@ -143,5 +143,17 @@ export const routes: Routes = [
     loadComponent: () => import('./uc100/registry/registry.page').then(m => m.Uc100RegistryPage),
     canActivate: [authGuard],
     data: { permission: 'UC100_SOLAR.LISTING' }
+  },
+  {
+    path: 'smart-pole/cctv/monitoring',
+    loadComponent: () => import('./SmartPole/cctv/cctv.page').then(m => m.CctvPage),
+    canActivate: [authGuard],
+    data: { permission: 'SMART_CITY_POLE.LISTING' }
+  },
+  {
+    path: 'smart-pole/environmental/monitoring',
+    loadComponent: () => import('./SmartPole/environmental/environmental.page').then(m => m.EnvironmentalPage),
+    canActivate: [authGuard],
+    data: { permission: 'SMART_CITY_POLE.LISTING' }
   }
 ];

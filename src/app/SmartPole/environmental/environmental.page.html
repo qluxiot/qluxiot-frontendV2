@@ -1,0 +1,144 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="env-content ion-padding">
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface m-0">Environmental Sensor</h1>
+      </div>
+      <div class="header-badge">
+        <span class="live-dot"></span>
+        <span class="live-text">LIVE DATA</span>
+      </div>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(27,43,58,0.1);">
+          <ion-icon name="location-outline" style="color: #1b2b3a;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value">{{ totalPoles }}</div>
+          <div class="summary-label">Total Poles</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(16,185,129,0.1);">
+          <ion-icon name="checkmark-circle" style="color: #10b981;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color: #10b981;">{{ onlinePoles }}</div>
+          <div class="summary-label">Online</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
+          <ion-icon name="alert-circle" style="color: #ef4444;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color: #ef4444;">{{ offlinePoles }}</div>
+          <div class="summary-label">Offline</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(245,158,11,0.1);">
+          <ion-icon name="warning-outline" style="color: #f59e0b;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color: #f59e0b;">{{ alertCount }}</div>
+          <div class="summary-label">Alerts Active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Layout: Pole List + Detail -->
+    <div class="main-layout">
+
+      <!-- Pole Selector -->
+      <div class="pole-list">
+        <div class="panel-header">
+          <span class="material-symbols-outlined panel-icon">sensors</span>
+          <span class="panel-title">Smart Poles</span>
+        </div>
+        <div
+          *ngFor="let pole of poles"
+          class="pole-item"
+          [class.selected]="selectedPoleId === pole.id"
+          (click)="selectPole(pole.id)">
+          <div class="pole-status-dot" [class.online]="pole.isOnline" [class.offline]="!pole.isOnline"></div>
+          <div class="pole-info">
+            <div class="pole-name">{{ pole.name }}</div>
+            <div class="pole-location">{{ pole.location }}</div>
+            <div class="pole-updated">Updated: {{ pole.lastUpdated }}</div>
+          </div>
+          <div class="pole-online-badge" [class.online]="pole.isOnline">
+            {{ pole.isOnline ? 'Online' : 'Offline' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor Detail Panel -->
+      <div class="sensor-panel">
+        <!-- Pole Title + AQI -->
+        <div class="sensor-panel-header">
+          <div>
+            <h2 class="selected-pole-name">{{ selectedPole.name }}</h2>
+            <p class="selected-pole-location">
+              <ion-icon name="location-outline"></ion-icon>
+              {{ selectedPole.location }}
+            </p>
+          </div>
+          <div class="aqi-badge" [style.background]="aqiLevel.color + '20'" [style.borderColor]="aqiLevel.color + '40'">
+            <div class="aqi-value" [style.color]="aqiLevel.color">{{ selectedPole.isOnline ? aqiLevel.value : '--' }}</div>
+            <div class="aqi-label">AQI</div>
+            <div class="aqi-status" [style.color]="aqiLevel.color">{{ aqiLevel.label }}</div>
+          </div>
+        </div>
+
+        <!-- Offline Banner -->
+        <div *ngIf="!selectedPole.isOnline" class="offline-banner">
+          <ion-icon name="alert-circle"></ion-icon>
+          This Smart Pole is currently offline. Last data received {{ selectedPole.lastUpdated }}.
+        </div>
+
+        <!-- Sensor Reading Cards Grid -->
+        <div class="readings-grid">
+          <div class="reading-card" *ngFor="let r of selectedPole.readings" [class.offline-card]="!selectedPole.isOnline">
+            <div class="reading-icon-wrap" [style.background]="r.bgColor">
+              <ion-icon [name]="r.icon" [style.color]="selectedPole.isOnline ? r.iconColor : '#94a3b8'"></ion-icon>
+            </div>
+            <div class="reading-body">
+              <div class="reading-label">{{ r.label }}</div>
+              <div class="reading-value-row">
+                <span class="reading-value">{{ selectedPole.isOnline ? r.value : '--' }}</span>
+                <span class="reading-unit">{{ r.unit }}</span>
+              </div>
+              <div class="reading-desc">{{ r.description }}</div>
+            </div>
+            <div class="reading-status-badge" [ngClass]="selectedPole.isOnline ? getStatusClass(r.status) : 'status-offline'">
+              {{ selectedPole.isOnline ? getStatusBadgeText(r.status) : 'Offline' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Historical Trend Placeholder -->
+        <div class="chart-placeholder-section">
+          <div class="panel-header" style="margin-bottom: 16px;">
+            <span class="material-symbols-outlined panel-icon">show_chart</span>
+            <span class="panel-title">24-Hour Historical Trend</span>
+          </div>
+          <div class="chart-placeholder">
+            <span class="material-symbols-outlined chart-placeholder-icon">insert_chart</span>
+            <p class="chart-placeholder-text">Historical chart will be available once connected to the live API endpoint.</p>
+            <span class="chart-placeholder-tag">Mock Up</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</ion-content>
