@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -8,6 +9,7 @@ import {
   checkmarkCircle, alertCircle, warningOutline
 } from 'ionicons/icons';
 import { CustomHeaderComponent } from '../../components/custom-header/custom-header.component';
+import { environment } from '../../../environments/environment';
 
 export interface SensorReading {
   label: string;
@@ -49,55 +51,21 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   poles: SmartPole[] = [
     {
       id: 1,
-      name: 'Smart Pole SP-001',
-      location: 'Jalan Utama, Labuan',
+      name: 'Smart Pole SP-001 (Live Gateway NJ-530)',
+      location: 'Labuan Smart Pole Live Station',
       isOnline: true,
-      lastUpdated: '2 seconds ago',
+      lastUpdated: 'just now',
       readings: [
-        { label: 'Temperature', value: 32.4, unit: '°C', icon: 'thermometer-outline', iconColor: '#ef4444', bgColor: 'rgba(239,68,68,0.1)', status: 'warning', description: 'Slightly above comfortable range' },
-        { label: 'Humidity', value: 78, unit: '%', icon: 'water-outline', iconColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.1)', status: 'good', description: 'Within normal range' },
-        { label: 'PM2.5', value: 18.2, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.1)', status: 'good', description: 'Air quality is acceptable' },
-        { label: 'PM10', value: 35.6, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#8b5cf6', bgColor: 'rgba(139,92,246,0.1)', status: 'good', description: 'Well within WHO guidelines' },
-        { label: 'CO₂', value: 420, unit: 'ppm', icon: 'leaf-outline', iconColor: '#10b981', bgColor: 'rgba(16,185,129,0.1)', status: 'good', description: 'Normal atmospheric level' },
-        { label: 'Noise Level', value: 62, unit: 'dB', icon: 'flash-outline', iconColor: '#f97316', bgColor: 'rgba(249,115,22,0.1)', status: 'warning', description: 'Moderate traffic noise' },
-        { label: 'UV Index', value: 5.2, unit: 'UVI', icon: 'eye-outline', iconColor: '#eab308', bgColor: 'rgba(234,179,8,0.1)', status: 'warning', description: 'Moderate UV exposure' },
-        { label: 'Wind Speed', value: 12.4, unit: 'km/h', icon: 'wifi-outline', iconColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.1)', status: 'good', description: 'Light breeze conditions' },
+        { label: 'Temperature', value: 0, unit: '°C', icon: 'thermometer-outline', iconColor: '#ef4444', bgColor: 'rgba(239,68,68,0.1)', status: 'good', description: 'Live ambient air temperature' },
+        { label: 'Humidity', value: 0, unit: '%', icon: 'water-outline', iconColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.1)', status: 'good', description: 'Relative ambient humidity' },
+        { label: 'PM2.5', value: 0, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.1)', status: 'good', description: 'Fine particulate matter PM2.5' },
+        { label: 'PM10', value: 0, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#8b5cf6', bgColor: 'rgba(139,92,246,0.1)', status: 'good', description: 'Inhalable particulate matter PM10' },
+        { label: 'CO₂', value: 0, unit: 'ppm', icon: 'leaf-outline', iconColor: '#10b981', bgColor: 'rgba(16,185,129,0.1)', status: 'good', description: 'Carbon dioxide concentration' },
+        { label: 'Noise Level', value: 0, unit: 'dB', icon: 'flash-outline', iconColor: '#f97316', bgColor: 'rgba(249,115,22,0.1)', status: 'good', description: 'Ambient noise sound level' },
+        { label: 'Pressure', value: 0, unit: 'kPa', icon: 'eye-outline', iconColor: '#eab308', bgColor: 'rgba(234,179,8,0.1)', status: 'good', description: 'Barometric air pressure' },
+        { label: 'Wind Speed', value: 0, unit: 'm/s', icon: 'wifi-outline', iconColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.1)', status: 'good', description: 'Ultrasonic wind velocity' },
       ]
-    },
-    {
-      id: 2,
-      name: 'Smart Pole SP-002',
-      location: 'Persiaran Perdana, Labuan',
-      isOnline: true,
-      lastUpdated: '5 seconds ago',
-      readings: [
-        { label: 'Temperature', value: 34.8, unit: '°C', icon: 'thermometer-outline', iconColor: '#ef4444', bgColor: 'rgba(239,68,68,0.1)', status: 'danger', description: 'High temperature alert' },
-        { label: 'Humidity', value: 85, unit: '%', icon: 'water-outline', iconColor: '#3b82f6', bgColor: 'rgba(59,130,246,0.1)', status: 'warning', description: 'High humidity level' },
-        { label: 'PM2.5', value: 55.1, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#f59e0b', bgColor: 'rgba(245,158,11,0.1)', status: 'danger', description: 'Unhealthy for sensitive groups' },
-        { label: 'PM10', value: 89.3, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#8b5cf6', bgColor: 'rgba(139,92,246,0.1)', status: 'warning', description: 'Approaching WHO guideline limit' },
-        { label: 'CO₂', value: 510, unit: 'ppm', icon: 'leaf-outline', iconColor: '#10b981', bgColor: 'rgba(16,185,129,0.1)', status: 'warning', description: 'Slightly elevated near traffic' },
-        { label: 'Noise Level', value: 75, unit: 'dB', icon: 'flash-outline', iconColor: '#f97316', bgColor: 'rgba(249,115,22,0.1)', status: 'danger', description: 'Heavy traffic area, loud' },
-        { label: 'UV Index', value: 8.7, unit: 'UVI', icon: 'eye-outline', iconColor: '#eab308', bgColor: 'rgba(234,179,8,0.1)', status: 'danger', description: 'Very high UV — protection needed' },
-        { label: 'Wind Speed', value: 5.1, unit: 'km/h', icon: 'wifi-outline', iconColor: '#06b6d4', bgColor: 'rgba(6,182,212,0.1)', status: 'good', description: 'Calm, low dispersion of pollutants' },
-      ]
-    },
-    {
-      id: 3,
-      name: 'Smart Pole SP-003',
-      location: 'Jalan OKK Awang Besar, Labuan',
-      isOnline: false,
-      lastUpdated: '2 hours ago',
-      readings: [
-        { label: 'Temperature', value: 0, unit: '°C', icon: 'thermometer-outline', iconColor: '#94a3b8', bgColor: 'rgba(148,163,184,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'Humidity', value: 0, unit: '%', icon: 'water-outline', iconColor: '#94a3b8', bgColor: 'rgba(148,163,184,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'PM2.5', value: 0, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#94a3b8', bgColor: 'rgba(148,163,184,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'PM10', value: 0, unit: 'µg/m³', icon: 'cloud-outline', iconColor: '#94a3b8', bgColor: 'rgba(148,163,184,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'CO₂', value: 0, unit: 'ppm', icon: 'leaf-outline', iconColor: '#94a3b8', bgColor: 'rgba(148,163,184,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'Noise Level', value: 0, unit: 'dB', icon: 'flash-outline', iconColor: '#94a3b8', bgColor: 'rgba(249,115,22,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'UV Index', value: 0, unit: 'UVI', icon: 'eye-outline', iconColor: '#94a3b8', bgColor: 'rgba(234,179,8,0.1)', status: 'good', description: 'No data — device offline' },
-        { label: 'Wind Speed', value: 0, unit: 'km/h', icon: 'wifi-outline', iconColor: '#94a3b8', bgColor: 'rgba(6,182,212,0.1)', status: 'good', description: 'No data — device offline' },
-      ]
-    },
+    }
   ];
 
   get selectedPole(): SmartPole {
@@ -113,14 +81,14 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
 
   get aqiLevel(): { label: string; color: string; value: number } {
     const pm25 = this.selectedPole.readings.find(r => r.label === 'PM2.5')?.value ?? 0;
-    if (!this.selectedPole.isOnline) return { label: 'No Data', color: '#94a3b8', value: 0 };
+    if (!this.selectedPole.isOnline) return { label: 'Offline', color: '#94a3b8', value: 0 };
     if (pm25 <= 12) return { label: 'Good', color: '#10b981', value: Math.round(pm25 * 4) };
     if (pm25 <= 35.4) return { label: 'Moderate', color: '#f59e0b', value: Math.round(pm25 * 2.2) };
     if (pm25 <= 55.4) return { label: 'Unhealthy (Sensitive)', color: '#f97316', value: Math.round(pm25 * 1.5) };
     return { label: 'Unhealthy', color: '#ef4444', value: Math.round(pm25 * 1.2) };
   }
 
-  constructor() {
+  constructor(private http: HttpClient) {
     addIcons({
       thermometerOutline, waterOutline, leafOutline, cloudOutline,
       eyeOutline, flashOutline, wifiOutline, locationOutline,
@@ -129,10 +97,11 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Simulate live data updates every 5 seconds
+    this.fetchLiveTelemetry();
+    // Poll live backend endpoint every 2 seconds
     this.refreshInterval = setInterval(() => {
-      this.simulateLiveUpdate();
-    }, 5000);
+      this.fetchLiveTelemetry();
+    }, 2000);
   }
 
   ngOnDestroy() {
@@ -155,15 +124,38 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     return { good: 'Normal', warning: 'Warning', danger: 'Alert' }[status];
   }
 
-  private simulateLiveUpdate() {
-    this.poles.forEach(pole => {
-      if (!pole.isOnline) return;
-      pole.lastUpdated = 'just now';
-      pole.readings.forEach(r => {
-        // tiny fluctuation for simulation
-        const delta = (Math.random() - 0.5) * 0.4;
-        r.value = Math.max(0, parseFloat((r.value + delta).toFixed(1)));
-      });
+  private fetchLiveTelemetry() {
+    this.http.get<any>(`${environment.apiUrl}/api/environmental/live`).subscribe({
+      next: (data) => {
+        if (!data) return;
+        const pole = this.poles[0]; // SP-001 connected to live hardware
+        pole.isOnline = data.isOnline;
+        pole.lastUpdated = 'just now';
+
+        // Update each sensor metric
+        this.updateReading(pole, 'Temperature', data.temperature, '°C', data.temperature > 35 ? 'danger' : data.temperature > 31 ? 'warning' : 'good');
+        this.updateReading(pole, 'Humidity', data.humidity, '%', data.humidity > 80 ? 'warning' : 'good');
+        this.updateReading(pole, 'PM2.5', data.pm25, 'µg/m³', data.pm25 > 55 ? 'danger' : data.pm25 > 35 ? 'warning' : 'good');
+        this.updateReading(pole, 'PM10', data.pm10, 'µg/m³', data.pm10 > 100 ? 'danger' : data.pm10 > 50 ? 'warning' : 'good');
+        this.updateReading(pole, 'CO₂', data.co2 || 415, 'ppm', (data.co2 || 415) > 1000 ? 'warning' : 'good');
+        this.updateReading(pole, 'Noise Level', data.noise, 'dB', data.noise > 75 ? 'danger' : data.noise > 65 ? 'warning' : 'good');
+        this.updateReading(pole, 'Pressure', data.pressure, 'kPa', 'good');
+        this.updateReading(pole, 'Wind Speed', data.windSpeed, 'm/s', data.windSpeed > 10 ? 'warning' : 'good');
+      },
+      error: () => {
+        // If backend connection fails, mark live pole offline
+        this.poles[0].isOnline = false;
+        this.poles[0].lastUpdated = 'offline';
+      }
     });
+  }
+
+  private updateReading(pole: SmartPole, label: string, value: number, unit: string, status: 'good' | 'warning' | 'danger') {
+    const reading = pole.readings.find(r => r.label === label);
+    if (reading) {
+      reading.value = value;
+      reading.unit = unit;
+      reading.status = status;
+    }
   }
 }

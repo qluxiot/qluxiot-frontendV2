@@ -155,5 +155,15 @@ export const routes: Routes = [
     loadComponent: () => import('./SmartPole/environmental/environmental.page').then(m => m.EnvironmentalPage),
     canActivate: [authGuard],
     data: { permission: 'SMART_CITY_POLE.LISTING' }
+  },
+  {
+    path: 'smart-pole/panic-button',
+    loadComponent: () => import('./SmartPole/panic-button/panic-button.page').then(m => m.PanicButtonPage),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'smart-pole/panic-button/monitoring',
+    loadComponent: () => import('./SmartPole/panic-button/panic-button.page').then(m => m.PanicButtonPage),
+    canActivate: [authGuard]
   }
 ];

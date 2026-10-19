@@ -1,0 +1,175 @@
+<app-custom-header></app-custom-header>
+
+<ion-content [fullscreen]="true" class="panic-content ion-padding">
+  <main class="flex-1 px-gutter py-lg max-w-[1440px] mx-auto w-full">
+
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
+      <div>
+        <h1 class="text-display font-display text-on-surface m-0">Panic Button</h1>
+        <p class="text-sm text-slate-500 m-0 mt-1">Live One-Key Emergency SOS & Intercom Terminal (Localhost Gateway)</p>
+      </div>
+      <div class="active-alert-indicator" *ngIf="activeAlerts > 0">
+        <span class="alert-pulse"></span>
+        <span class="alert-text">{{ activeAlerts }} ACTIVE ALERT{{ activeAlerts > 1 ? 'S' : '' }}</span>
+      </div>
+    </div>
+
+    <!-- Summary Row -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(27,43,58,0.1);">
+          <span class="material-symbols-outlined" style="color:#1b2b3a; font-size:22px;">crisis_alert</span>
+        </div>
+        <div>
+          <div class="summary-value">{{ totalDevices }}</div>
+          <div class="summary-label">Total Terminals</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
+          <ion-icon name="alert-circle" style="color:#ef4444;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color:#ef4444;">{{ activeAlerts }}</div>
+          <div class="summary-label">Active Alerts</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(16,185,129,0.1);">
+          <ion-icon name="shield-checkmark-outline" style="color:#10b981;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color:#10b981;">{{ standbyCount }}</div>
+          <div class="summary-label">Standby</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(100,116,139,0.1);">
+          <ion-icon name="alert-circle" style="color:#94a3b8;"></ion-icon>
+        </div>
+        <div>
+          <div class="summary-value" style="color:#94a3b8;">{{ offlineCount }}</div>
+          <div class="summary-label">Offline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-bar">
+      <button class="filter-tab" [class.active]="selectedFilter === 'all'" (click)="selectedFilter = 'all'">All ({{ totalDevices }})</button>
+      <button class="filter-tab active-tab" [class.active]="selectedFilter === 'active'" (click)="selectedFilter = 'active'">🔴 Alert ({{ activeAlerts }})</button>
+      <button class="filter-tab" [class.active]="selectedFilter === 'standby'" (click)="selectedFilter = 'standby'">Standby ({{ standbyCount }})</button>
+      <button class="filter-tab" [class.active]="selectedFilter === 'offline'" (click)="selectedFilter = 'offline'">Offline ({{ offlineCount }})</button>
+    </div>
+
+    <!-- Device Grid -->
+    <div class="devices-grid">
+      <div class="device-card" *ngFor="let d of filteredDevices"
+        [class.card-active]="d.status === 'active'"
+        [class.card-offline]="d.status === 'offline'">
+
+        <!-- Status Header -->
+        <div class="device-card-header" [style.background]="getStatusColor(d.status) + '12'">
+          <div class="device-icon-wrap" [style.background]="getStatusColor(d.status) + '25'" [class.icon-active]="d.status === 'active'">
+            <span class="material-symbols-outlined device-main-icon" [style.color]="getStatusColor(d.status)">crisis_alert</span>
+          </div>
+          <div class="device-name-wrap">
+            <div class="device-name">{{ d.name }}</div>
+            <div class="device-pole">{{ d.poleId }} &bull; S/N: {{ d.serialNumber || '202217230199222' }}</div>
+          </div>
+          <div class="device-status-badge" [style.background]="getStatusColor(d.status) + '20'" [style.color]="getStatusColor(d.status)" [style.borderColor]="getStatusColor(d.status) + '50'">
+            {{ getStatusLabel(d.status) }}
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="device-card-body">
+          <div class="device-location">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ d.location }}
+          </div>
+
+          <!-- Network info tag -->
+          <div class="flex items-center gap-2 text-xs text-slate-500 my-2 px-1">
+            <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">IP: {{ d.ipAddress || '192.168.155.241' }}</span>
+            <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">MAC: {{ d.macAddress || 'b0:a8:79:7a:ba:98' }}</span>
+          </div>
+
+          <!-- Active Alert Details -->
+          <div *ngIf="d.status === 'active'" class="alert-details">
+            <div class="alert-row">
+              <span class="alert-label">Alarm Trigger</span>
+              <span class="alert-value text-red-600 font-bold">{{ d.pressedBy }}</span>
+            </div>
+            <div class="alert-row">
+              <span class="alert-label">Timestamp</span>
+              <span class="alert-value">{{ d.lastPressed }}</span>
+            </div>
+            <div class="alert-row" *ngIf="d.responseTime">
+              <span class="alert-label">Status</span>
+              <span class="alert-value response">{{ d.responseTime }}</span>
+            </div>
+
+            <!-- Action buttons for active alert -->
+            <div class="mt-4 pt-3 border-t border-red-200 flex gap-2">
+              <button (click)="dismissAlarm(d)" class="w-full py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition">
+                <ion-icon name="checkmark-circle"></ion-icon>
+                Acknowledge & Clear Alarm
+              </button>
+            </div>
+          </div>
+
+          <!-- Standby / Offline Stats -->
+          <div *ngIf="d.status !== 'active'" class="device-stats">
+            <div class="stat-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <div>
+                <div class="stat-val">{{ d.lastPressed }}</div>
+                <div class="stat-lbl">Last Triggered</div>
+              </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <ion-icon name="notifications-outline"></ion-icon>
+              <div>
+                <div class="stat-val">{{ d.incidentCount }}</div>
+                <div class="stat-lbl">Incidents</div>
+              </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <ion-icon name="hardware-chip-outline" style="color: #3b82f6;"></ion-icon>
+              <div>
+                <div class="stat-val text-blue-600">LAN</div>
+                <div class="stat-lbl">Gateway</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test button when in Standby -->
+          <div *ngIf="d.status === 'standby'" class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <button (click)="triggerManualAlarm(d)" class="text-xs text-red-600 hover:text-red-700 font-medium py-1 px-2.5 rounded bg-red-50 hover:bg-red-100 transition flex items-center gap-1">
+              <span class="material-symbols-outlined" style="font-size: 14px;">notification_important</span>
+              Test Trigger SOS
+            </button>
+          </div>
+
+          <div class="device-footer">
+            <span class="footer-text">Checked: {{ d.lastChecked }} &bull; Port 554 RTSP</span>
+            <span class="online-dot" [class.online]="d.isOnline" [title]="d.isOnline ? 'Online' : 'Offline'"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-time Hardware Information Card -->
+    <div class="integration-note" style="border-left-color: #10b981; background: rgba(16, 185, 129, 0.05);">
+      <span class="material-symbols-outlined" style="color: #10b981;">sensors</span>
+      <div>
+        <strong style="color: #065f46;">Live Localhost Terminal</strong> — Connected to physical LionKing 110 IP Intercom & SOS Button via NJ-IoT530 Gateway LAN. Triggering the physical metal button or web console immediately activates real-time alert state and logs.
+      </div>
+    </div>
+
+  </main>
+</ion-content>
