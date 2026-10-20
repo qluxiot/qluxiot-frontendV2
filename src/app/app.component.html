@@ -158,7 +158,7 @@
 
             <!-- Smart Pole Accordion -->
             <ion-accordion-group class="sidebar-accordion-group"
-              *ngIf="hasPermission('SMART_CITY_POLE.LISTING')">
+              *ngIf="hasPermission('SMART_CITY_POLE.LISTING') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
               <ion-accordion value="smart-pole" class="sidebar-accordion">
                 <ion-item slot="header" class="menu-item header-item" lines="none">
                   <ion-icon slot="start" name="radio-outline" class="menu-icon"></ion-icon>
