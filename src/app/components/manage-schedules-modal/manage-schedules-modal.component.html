@@ -74,8 +74,37 @@
           <p *ngIf="!s.rules || s.rules.length === 0" class="text-secondary italic">No rules defined.</p>
         </div>
         
+        <!-- Device Assignment & Project Breakdown -->
         <div class="mt-sm pt-sm border-t border-surface-variant text-label-sm text-secondary">
-          Currently assigned to <span class="font-bold text-on-surface">{{ s.devices?.length || 0 }}</span> devices.
+          <div class="flex items-center gap-1.5 mb-1.5">
+            <span class="material-symbols-outlined text-[16px] text-primary">devices</span>
+            <span>Currently assigned to <span class="font-bold text-on-surface">{{ s.devices?.length || 0 }}</span> devices</span>
+          </div>
+
+          <!-- Project Breakdown Tags -->
+          <div *ngIf="s.devices && s.devices.length > 0" class="flex flex-wrap items-center gap-1.5 pl-6">
+            <span *ngFor="let p of getProjectBreakdown(s.devices)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-surface-container-high text-on-surface font-medium border border-outline-variant/60">
+              <span class="material-symbols-outlined text-[13px] text-secondary">folder_open</span>
+              <span>{{ p.projectName }}:</span>
+              <span class="font-bold text-primary">{{ p.count }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Audit Trail (Created & Edited User Info) -->
+        <div class="mt-2.5 pt-2 border-t border-dashed border-outline-variant/50 flex flex-wrap items-center justify-between gap-2 text-[11px] text-secondary/80">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[14px]">person_outline</span>
+            <span>Created by <strong class="text-on-surface font-semibold">{{ getUserDisplayName(s.created_by) }}</strong></span>
+            <span class="text-outline">&bull;</span>
+            <span>{{ s.created_at | date:'dd/MM/yyyy, h:mm a' }}</span>
+          </div>
+          <div class="flex items-center gap-1.5" *ngIf="s.updated_by || (s.updated_at && s.updated_at !== s.created_at)">
+            <span class="material-symbols-outlined text-[14px]">edit_note</span>
+            <span>Edited by <strong class="text-on-surface font-semibold">{{ getUserDisplayName(s.updated_by) }}</strong></span>
+            <span class="text-outline">&bull;</span>
+            <span>{{ s.updated_at | date:'dd/MM/yyyy, h:mm a' }}</span>
+          </div>
         </div>
       </div>
     </div>

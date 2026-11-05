@@ -71,7 +71,7 @@ export class PanicButtonPage implements OnInit, OnDestroy {
       lastChecked: 'Just now',
       signalStrength: 5,
       rtspUrl: 'rtsp://192.168.155.241:554',
-      webrtcUrl: 'http://localhost:8889/panic_button/'
+      webrtcUrl: 'https://mortgage-engaged-transmission-rep.trycloudflare.com/panic_button/'
     }
   ];
 

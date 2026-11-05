@@ -187,4 +187,19 @@ export class ManageSchedulesModalComponent implements OnInit {
       });
     }
   }
+
+  getProjectBreakdown(devices: any[] = []): { projectName: string; count: number }[] {
+    if (!devices || devices.length === 0) return [];
+    const counts: { [key: string]: number } = {};
+    for (const d of devices) {
+      const pName = d.project?.name || 'Unassigned Project';
+      counts[pName] = (counts[pName] || 0) + 1;
+    }
+    return Object.keys(counts).map(name => ({ projectName: name, count: counts[name] }));
+  }
+
+  getUserDisplayName(user: any): string {
+    if (!user) return 'System';
+    return user.name || user.username || 'System';
+  }
 }

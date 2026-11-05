@@ -194,11 +194,17 @@
                 </div>
               </td>
               <td *ngIf="isAdmin" class="px-lg py-md text-body-md">
-                <span *ngIf="d.device_type !== 'Gateway'" class="px-2 py-1 rounded text-label-sm font-semibold"
-                  [class.bg-blue-100]="d.schedule_profile" [class.text-blue-700]="d.schedule_profile"
-                  [class.bg-surface-container-high]="!d.schedule_profile" [class.text-secondary]="!d.schedule_profile">
-                  {{ d.schedule_profile?.name || 'Unassigned' }}
-                </span>
+                <div *ngIf="d.device_type !== 'Gateway'" class="flex flex-col items-start gap-1">
+                  <span class="px-2 py-1 rounded text-label-sm font-semibold"
+                    [class.bg-blue-100]="d.schedule_profile" [class.text-blue-700]="d.schedule_profile"
+                    [class.bg-surface-container-high]="!d.schedule_profile" [class.text-secondary]="!d.schedule_profile">
+                    {{ d.schedule_profile?.name || 'Unassigned' }}
+                  </span>
+                  <div *ngIf="d.schedule_profile && (d.schedule_assigned_by || d.schedule_assigned_at)" class="text-[11px] text-secondary flex flex-col leading-tight">
+                    <span *ngIf="d.schedule_assigned_by">By: <strong class="text-on-surface font-medium">{{ d.schedule_assigned_by?.name || d.schedule_assigned_by?.username }}</strong></span>
+                    <span *ngIf="d.schedule_assigned_at" class="text-outline text-[10px]">{{ d.schedule_assigned_at | date:'dd/MM/yy, h:mm a' }}</span>
+                  </div>
+                </div>
                 <span *ngIf="d.device_type === 'Gateway'" class="text-secondary">--</span>
               </td>
               <td class="px-lg py-md text-body-md text-on-surface-variant">
