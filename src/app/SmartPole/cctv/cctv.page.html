@@ -9,6 +9,18 @@
         <h1 class="text-display font-display text-on-surface m-0">CCTV Monitoring</h1>
       </div>
       <div class="header-controls">
+        <!-- Project Filter (Super Admin only) -->
+        <div *ngIf="isSuperAdmin && projects.length > 0"
+          class="flex items-center gap-sm px-md py-2 bg-surface-container-lowest border border-outline-variant rounded-lg hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+          <span class="text-body-md font-body-md text-secondary">Project:</span>
+          <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()"
+            class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer">
+            <option [ngValue]="null">All Projects</option>
+            <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+
         <div class="time-display">
           <ion-icon name="time-outline"></ion-icon>
           {{ currentTime }}
@@ -84,7 +96,7 @@
     </div>
 
     <!-- Camera Grid -->
-    <div class="cameras-grid" [class.list-view]="viewMode === 'list'">
+    <div *ngIf="filteredCameras.length > 0" class="cameras-grid" [class.list-view]="viewMode === 'list'">
       <div class="camera-card" *ngFor="let cam of filteredCameras" [class.offline]="!cam.isOnline">
 
         <!-- Video Feed Placeholder -->
@@ -184,6 +196,13 @@
         </div>
 
       </div>
+    </div>
+
+    <!-- Empty State when no cameras are in this project -->
+    <div *ngIf="filteredCameras.length === 0" class="py-16 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 my-6 shadow-sm">
+      <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">videocam_off</span>
+      <h3 class="text-base font-semibold text-slate-700 dark:text-slate-200">No CCTV Cameras</h3>
+      <p class="text-sm text-slate-400 max-w-sm mx-auto mt-1">There are no CCTV cameras registered for this project.</p>
     </div>
 
     <!-- Integration Note -->

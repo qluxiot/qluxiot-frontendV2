@@ -47,7 +47,7 @@
                             <ion-label>Overview</ion-label>
                           </ion-item>
                         </ion-menu-toggle>
-                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
+                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin && !isQluxGroupAdmin">
                           <ion-item routerLink="/smart-led/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
                             <span class="bullet">-</span>
                             <ion-label>Device Registration</ion-label>
@@ -89,7 +89,7 @@
                             <ion-label>Overview</ion-label>
                           </ion-item>
                         </ion-menu-toggle>
-                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
+                        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin && !isQluxGroupAdmin">
                           <ion-item routerLink="/smart-solar/registry" routerLinkActive="active-submodule" [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
                             <span class="bullet">-</span>
                             <ion-label>Device Registration</ion-label>
@@ -158,7 +158,7 @@
 
             <!-- Smart Pole Accordion -->
             <ion-accordion-group class="sidebar-accordion-group"
-              *ngIf="hasPermission('SMART_CITY_POLE.LISTING') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
+              *ngIf="canAccessSmartPole && hasPermission('SMART_CITY_POLE.LISTING') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
               <ion-accordion value="smart-pole" class="sidebar-accordion">
                 <ion-item slot="header" class="menu-item header-item" lines="none">
                   <ion-icon slot="start" name="radio-outline" class="menu-icon"></ion-icon>
@@ -235,7 +235,7 @@
                       <ion-label>Alarms Notification</ion-label>
                     </ion-item>
                   </ion-menu-toggle>
-                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('NOTIFICATION_SETUP.WHATSAPP_MANAGE') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
+                  <ion-menu-toggle auto-hide="false" *ngIf="hasPermission('NOTIFICATION_SETUP.WHATSAPP_MANAGE') && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin && !isQluxGroupAdmin">
                     <ion-item routerLink="/notification-settings/whatsapp-setup" routerLinkActive="active-submodule"
                       [routerLinkActiveOptions]="{ exact: true }" class="submodule-item" button>
                       <span class="bullet">•</span>
@@ -248,7 +248,7 @@
 
             <!-- User Accordion -->
             <ion-accordion-group class="sidebar-accordion-group"
-              *ngIf="hasAnyPermission(['USER_MANAGEMENT.LISTING', 'ROLE_MANAGEMENT.LISTING', 'ROLE_PERMISSION.LISTING']) && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin">
+              *ngIf="hasAnyPermission(['USER_MANAGEMENT.LISTING', 'ROLE_MANAGEMENT.LISTING', 'ROLE_PERMISSION.LISTING']) && !isJkrLabuanAdmin && !isMbsAdmin && !isJkrShAdmin && !isJohorPortAdmin && !isQluxGroupAdmin">
               <ion-accordion value="user" class="sidebar-accordion">
                 <ion-item slot="header" class="menu-item header-item" lines="none">
                   <ion-icon slot="start" name="people-outline" class="menu-icon"></ion-icon>

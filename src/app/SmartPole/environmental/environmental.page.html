@@ -8,9 +8,23 @@
       <div>
         <h1 class="text-display font-display text-on-surface m-0">Environmental Sensor</h1>
       </div>
-      <div class="header-badge">
-        <span class="live-dot"></span>
-        <span class="live-text">LIVE DATA</span>
+      <div class="flex flex-wrap items-center gap-md">
+        <!-- Project Filter (Super Admin only) -->
+        <div *ngIf="isSuperAdmin && projects.length > 0"
+          class="flex items-center gap-sm px-md py-2 bg-surface-container-lowest border border-outline-variant rounded-lg hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+          <span class="text-body-md font-body-md text-secondary">Project:</span>
+          <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()"
+            class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer">
+            <option [ngValue]="null">All Projects</option>
+            <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+
+        <div class="header-badge">
+          <span class="live-dot"></span>
+          <span class="live-text">LIVE DATA</span>
+        </div>
       </div>
     </div>
 
@@ -55,7 +69,7 @@
     </div>
 
     <!-- Main Layout: Pole List + Detail -->
-    <div class="main-layout">
+    <div class="main-layout" *ngIf="poles.length > 0 && selectedPole">
 
       <!-- Pole Selector -->
       <div class="pole-list">
@@ -138,6 +152,13 @@
         </div>
 
       </div>
+    </div>
+
+    <!-- Empty State when no smart poles are in this project -->
+    <div *ngIf="poles.length === 0" class="py-16 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 my-6 shadow-sm">
+      <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">sensors_off</span>
+      <h3 class="text-base font-semibold text-slate-700 dark:text-slate-200">No Environmental Sensors</h3>
+      <p class="text-sm text-slate-400 max-w-sm mx-auto mt-1">There are no smart poles or environmental sensors registered for this project.</p>
     </div>
 
   </main>

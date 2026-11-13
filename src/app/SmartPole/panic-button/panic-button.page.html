@@ -7,11 +7,24 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-xl">
       <div>
         <h1 class="text-display font-display text-on-surface m-0">Panic Button</h1>
-        <p class="text-sm text-slate-500 m-0 mt-1">Live One-Key Emergency SOS & Intercom Terminal (Localhost Gateway)</p>
       </div>
-      <div class="active-alert-indicator" *ngIf="activeAlerts > 0">
-        <span class="alert-pulse"></span>
-        <span class="alert-text">{{ activeAlerts }} ACTIVE ALERT{{ activeAlerts > 1 ? 'S' : '' }}</span>
+      <div class="flex flex-wrap items-center gap-md">
+        <!-- Project Filter (Super Admin only) -->
+        <div *ngIf="isSuperAdmin && projects.length > 0"
+          class="flex items-center gap-sm px-md py-2 bg-surface-container-lowest border border-outline-variant rounded-lg hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-secondary text-[20px]">filter_alt</span>
+          <span class="text-body-md font-body-md text-secondary">Project:</span>
+          <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()"
+            class="text-body-md font-body-md font-semibold text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer">
+            <option [ngValue]="null">All Projects</option>
+            <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+
+        <div class="active-alert-indicator" *ngIf="activeAlerts > 0">
+          <span class="alert-pulse"></span>
+          <span class="alert-text">{{ activeAlerts }} ACTIVE ALERT{{ activeAlerts > 1 ? 'S' : '' }}</span>
+        </div>
       </div>
     </div>
 
@@ -64,7 +77,7 @@
     </div>
 
     <!-- Device Grid -->
-    <div class="devices-grid">
+    <div *ngIf="filteredDevices.length > 0" class="devices-grid">
       <div class="device-card" *ngFor="let d of filteredDevices"
         [class.card-active]="d.status === 'active'"
         [class.card-offline]="d.status === 'offline'">
@@ -163,12 +176,11 @@
       </div>
     </div>
 
-    <!-- Real-time Hardware Information Card -->
-    <div class="integration-note" style="border-left-color: #10b981; background: rgba(16, 185, 129, 0.05);">
-      <span class="material-symbols-outlined" style="color: #10b981;">sensors</span>
-      <div>
-        <strong style="color: #065f46;">Live Localhost Terminal</strong> — Connected to physical LionKing 110 IP Intercom & SOS Button via NJ-IoT530 Gateway LAN. Triggering the physical metal button or web console immediately activates real-time alert state and logs.
-      </div>
+    <!-- Empty State when no devices are in this project -->
+    <div *ngIf="filteredDevices.length === 0" class="py-16 text-center bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 my-6 shadow-sm">
+      <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">emergency_home</span>
+      <h3 class="text-base font-semibold text-slate-700 dark:text-slate-200">No Panic Buttons</h3>
+      <p class="text-sm text-slate-400 max-w-sm mx-auto mt-1">There are no panic button terminals registered for this project.</p>
     </div>
 
   </main>

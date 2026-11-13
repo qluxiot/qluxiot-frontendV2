@@ -21,6 +21,11 @@ export const authGuard: CanActivateFn = (route, state) => {
         return false;
       }
 
+      if (route.data?.['checkSmartPoleAccess'] && !authService.canAccessSmartPole) {
+        router.navigate(['/home']);
+        return false;
+      }
+
       return true;
     })
   );

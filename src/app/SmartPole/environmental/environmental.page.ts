@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -10,6 +11,7 @@ import {
 } from 'ionicons/icons';
 import { CustomHeaderComponent } from '../../components/custom-header/custom-header.component';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 export interface SensorReading {
   label: string;
@@ -26,6 +28,8 @@ export interface SmartPole {
   id: number;
   name: string;
   location: string;
+  projectId?: number | null;
+  projectName?: string;
   isOnline: boolean;
   lastUpdated: string;
   readings: SensorReading[];
@@ -38,6 +42,7 @@ export interface SmartPole {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     IonContent,
     IonIcon,
     CustomHeaderComponent
@@ -45,14 +50,19 @@ export interface SmartPole {
 })
 export class EnvironmentalPage implements OnInit, OnDestroy {
 
+  projects: any[] = [];
+  selectedProjectId: number | null = null;
+
   selectedPoleId: number = 1;
   private refreshInterval: any;
 
-  poles: SmartPole[] = [
+  allPoles: SmartPole[] = [
     {
       id: 1,
-      name: 'Smart Pole SP-001 (Live Gateway NJ-530)',
-      location: 'Labuan Smart Pole Live Station',
+      name: 'Qlux Smart Pole SP-001',
+      location: 'Qlux Smart Pole SP-001',
+      projectId: null,
+      projectName: 'Qlux Device',
       isOnline: true,
       lastUpdated: 'just now',
       readings: [
@@ -68,7 +78,47 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     }
   ];
 
-  get selectedPole(): SmartPole {
+  get isSuperAdmin(): boolean {
+    const user = this.authService.getCurrentUser();
+    const role = user?.role?.toLowerCase().replace(/\s/g, '');
+    return this.authService.isSuperAdmin() || role === 'superadmin';
+  }
+
+  get poles(): SmartPole[] {
+    const user = this.authService.getCurrentUser();
+    const targetProjectId = this.isSuperAdmin ? this.selectedProjectId : user?.projectId;
+
+    // Super Admin with "All Projects"
+    if (this.isSuperAdmin && targetProjectId === null) {
+      return this.allPoles;
+    }
+
+    // When a specific project is selected (Super Admin) or user belongs to a project
+    if (targetProjectId !== null && targetProjectId !== undefined) {
+      const proj = this.projects.find(p => p.id === targetProjectId);
+      const projName = proj ? proj.name?.toLowerCase().trim() : '';
+
+      return this.allPoles.filter(p => {
+        if (p.projectId !== undefined && p.projectId !== null) {
+          return Number(p.projectId) === Number(targetProjectId);
+        }
+        if (p.projectName && projName) {
+          return p.projectName.toLowerCase().trim() === projName;
+        }
+        return false;
+      });
+    }
+
+    // If user is Qlux Group Admin
+    if (this.authService.isQluxGroupAdmin) {
+      return this.allPoles.filter(p => p.projectName === 'Qlux Device');
+    }
+
+    return [];
+  }
+
+  get selectedPole(): SmartPole | null {
+    if (this.poles.length === 0) return null;
     return this.poles.find(p => p.id === this.selectedPoleId) || this.poles[0];
   }
 
@@ -76,11 +126,13 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   get onlinePoles(): number { return this.poles.filter(p => p.isOnline).length; }
   get offlinePoles(): number { return this.poles.filter(p => !p.isOnline).length; }
   get alertCount(): number {
-    return this.selectedPole.readings.filter(r => r.status === 'danger' || r.status === 'warning').length;
+    if (!this.selectedPole) return 0;
+    return this.selectedPole.readings?.filter(r => r.status === 'danger' || r.status === 'warning').length || 0;
   }
 
   get aqiLevel(): { label: string; color: string; value: number } {
-    const pm25 = this.selectedPole.readings.find(r => r.label === 'PM2.5')?.value ?? 0;
+    if (!this.selectedPole) return { label: 'N/A', color: '#94a3b8', value: 0 };
+    const pm25 = this.selectedPole.readings?.find(r => r.label === 'PM2.5')?.value ?? 0;
     if (!this.selectedPole.isOnline) return { label: 'Offline', color: '#94a3b8', value: 0 };
     if (pm25 <= 12) return { label: 'Good', color: '#10b981', value: Math.round(pm25 * 4) };
     if (pm25 <= 35.4) return { label: 'Moderate', color: '#f59e0b', value: Math.round(pm25 * 2.2) };
@@ -88,7 +140,10 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     return { label: 'Unhealthy', color: '#ef4444', value: Math.round(pm25 * 1.2) };
   }
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
     addIcons({
       thermometerOutline, waterOutline, leafOutline, cloudOutline,
       eyeOutline, flashOutline, wifiOutline, locationOutline,
@@ -97,11 +152,27 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.loadProjects();
     this.fetchLiveTelemetry();
     // Poll live backend endpoint every 2 seconds
     this.refreshInterval = setInterval(() => {
       this.fetchLiveTelemetry();
     }, 2000);
+  }
+
+  loadProjects() {
+    if (this.isSuperAdmin) {
+      this.http.get<any[]>(`${environment.apiUrl}/api/projects`).subscribe({
+        next: (data) => { this.projects = data; },
+        error: (err) => console.error('Error loading projects', err)
+      });
+    }
+  }
+
+  onProjectFilterChange() {
+    if (this.poles.length > 0 && !this.poles.some(p => p.id === this.selectedPoleId)) {
+      this.selectedPoleId = this.poles[0].id;
+    }
   }
 
   ngOnDestroy() {

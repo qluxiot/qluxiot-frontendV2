@@ -148,22 +148,24 @@ export const routes: Routes = [
     path: 'smart-pole/cctv/monitoring',
     loadComponent: () => import('./SmartPole/cctv/cctv.page').then(m => m.CctvPage),
     canActivate: [authGuard],
-    data: { permission: 'SMART_CITY_POLE.LISTING' }
+    data: { permission: 'SMART_CITY_POLE.LISTING', checkSmartPoleAccess: true }
   },
   {
     path: 'smart-pole/environmental/monitoring',
     loadComponent: () => import('./SmartPole/environmental/environmental.page').then(m => m.EnvironmentalPage),
     canActivate: [authGuard],
-    data: { permission: 'SMART_CITY_POLE.LISTING' }
+    data: { permission: 'SMART_CITY_POLE.LISTING', checkSmartPoleAccess: true }
   },
   {
     path: 'smart-pole/panic-button',
     loadComponent: () => import('./SmartPole/panic-button/panic-button.page').then(m => m.PanicButtonPage),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { checkSmartPoleAccess: true }
   },
   {
     path: 'smart-pole/panic-button/monitoring',
     loadComponent: () => import('./SmartPole/panic-button/panic-button.page').then(m => m.PanicButtonPage),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { checkSmartPoleAccess: true }
   }
 ];

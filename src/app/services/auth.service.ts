@@ -137,6 +137,22 @@ export class AuthService {
     return !!isMatch;
   }
 
+  get isQluxGroupAdmin(): boolean {
+    const username = this.getUsername()?.toLowerCase().trim();
+    const name = localStorage.getItem('name')?.toLowerCase().trim();
+    const projectName = localStorage.getItem('projectName')?.toLowerCase().trim();
+
+    return (
+      username === 'qluxgroup' ||
+      name === 'qlux group admin' ||
+      projectName === 'qlux device'
+    );
+  }
+
+  get canAccessSmartPole(): boolean {
+    return this.isSuperAdmin() || this.isQluxGroupAdmin;
+  }
+
   readonly MBS_CLONE_MAPPING: { [key: string]: { name: string; serial: string } } = {
     'njLF5KOf8OuAT0Rm2025050817810531': { name: '2. Solar S1', serial: 'njpyH3OcPzON6UA22025050832921133' }
   };

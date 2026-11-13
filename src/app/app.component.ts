@@ -76,6 +76,14 @@ export class AppComponent implements OnInit {
     return this.authService.isJohorPortAdmin;
   }
 
+  get isQluxGroupAdmin(): boolean {
+    return this.authService.isQluxGroupAdmin;
+  }
+
+  get canAccessSmartPole(): boolean {
+    return this.authService.canAccessSmartPole;
+  }
+
   get isBertamEnabled(): boolean {
     // Enabled only for super admin (projectId === null) or user whose name is 'MBSP' (case-insensitive)
     const currentUser = this.authService.getCurrentUser();

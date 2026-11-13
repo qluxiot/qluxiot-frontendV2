@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -12,12 +13,15 @@ import { CustomHeaderComponent } from '../../components/custom-header/custom-hea
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 export interface CctvCamera {
   id: number;
   name: string;
   location: string;
   poleId: string;
+  projectId?: number | null;
+  projectName?: string;
   isOnline: boolean;
   resolution: string;
   fps: number;
@@ -38,6 +42,7 @@ export interface CctvCamera {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     IonContent,
     IonIcon,
     CustomHeaderComponent
@@ -45,12 +50,57 @@ export interface CctvCamera {
 })
 export class CctvPage implements OnInit, OnDestroy {
 
+  projects: any[] = [];
+  selectedProjectId: number | null = null;
+
   selectedFilter: 'all' | 'online' | 'offline' = 'all';
   viewMode: 'grid' | 'list' = 'grid';
   private tickInterval: any;
   currentTime: string = '';
 
-  cameras: CctvCamera[] = [];
+  allCameras: CctvCamera[] = [];
+
+  get isSuperAdmin(): boolean {
+    const user = this.authService.getCurrentUser();
+    const role = user?.role?.toLowerCase().replace(/\s/g, '');
+    return this.authService.isSuperAdmin() || role === 'superadmin';
+  }
+
+  get cameras(): CctvCamera[] {
+    const user = this.authService.getCurrentUser();
+    const targetProjectId = this.isSuperAdmin ? this.selectedProjectId : user?.projectId;
+
+    // Super Admin with "All Projects"
+    if (this.isSuperAdmin && targetProjectId === null) {
+      return this.allCameras;
+    }
+
+    // When a specific project is selected (Super Admin) or user belongs to a project
+    if (targetProjectId !== null && targetProjectId !== undefined) {
+      // Find the name of the project if available in this.projects
+      const proj = this.projects.find(p => p.id === targetProjectId);
+      const projName = proj ? proj.name?.toLowerCase().trim() : '';
+
+      return this.allCameras.filter(c => {
+        // Match by projectId if assigned
+        if (c.projectId !== undefined && c.projectId !== null) {
+          return Number(c.projectId) === Number(targetProjectId);
+        }
+        // Match by projectName (e.g. 'Qlux Device')
+        if (c.projectName && projName) {
+          return c.projectName.toLowerCase().trim() === projName;
+        }
+        return false;
+      });
+    }
+
+    // If user is Qlux Group Admin
+    if (this.authService.isQluxGroupAdmin) {
+      return this.allCameras.filter(c => c.projectName === 'Qlux Device');
+    }
+
+    return [];
+  }
 
   get filteredCameras(): CctvCamera[] {
     if (this.selectedFilter === 'online') return this.cameras.filter(c => c.isOnline);
@@ -65,7 +115,8 @@ export class CctvPage implements OnInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private authService: AuthService
   ) {
     addIcons({
       videocamOutline, videocamOffOutline, locationOutline,
@@ -77,13 +128,27 @@ export class CctvPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.tick();
     this.tickInterval = setInterval(() => this.tick(), 1000);
+    this.loadProjects();
     this.loadCameras();
+  }
+
+  loadProjects() {
+    if (this.isSuperAdmin) {
+      this.http.get<any[]>(`${environment.apiUrl}/api/projects`).subscribe({
+        next: (data) => { this.projects = data; },
+        error: (err) => console.error('Error loading projects', err)
+      });
+    }
+  }
+
+  onProjectFilterChange() {
+    // Project filter changed by Super Admin
   }
 
   loadCameras() {
     this.http.get<CctvCamera[]>(`${environment.apiUrl}/cctv/cameras`).subscribe({
       next: (data) => {
-        this.cameras = data.map(cam => {
+        this.allCameras = data.map(cam => {
           if (cam.streamUrl) {
             cam.safeStreamUrl = this.sanitizer.bypassSecurityTrustResourceUrl(cam.streamUrl);
           }
