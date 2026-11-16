@@ -148,13 +148,13 @@ export const routes: Routes = [
     path: 'smart-pole/cctv/monitoring',
     loadComponent: () => import('./SmartPole/cctv/cctv.page').then(m => m.CctvPage),
     canActivate: [authGuard],
-    data: { permission: 'SMART_CITY_POLE.LISTING', checkSmartPoleAccess: true }
+    data: { checkSmartPoleAccess: true }
   },
   {
     path: 'smart-pole/environmental/monitoring',
     loadComponent: () => import('./SmartPole/environmental/environmental.page').then(m => m.EnvironmentalPage),
     canActivate: [authGuard],
-    data: { permission: 'SMART_CITY_POLE.LISTING', checkSmartPoleAccess: true }
+    data: { checkSmartPoleAccess: true }
   },
   {
     path: 'smart-pole/panic-button',

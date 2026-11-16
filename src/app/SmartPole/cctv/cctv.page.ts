@@ -75,28 +75,27 @@ export class CctvPage implements OnInit, OnDestroy {
       return this.allCameras;
     }
 
-    // When a specific project is selected (Super Admin) or user belongs to a project
+    // If logged in as Qlux Group Admin (or project name is Qlux Device), show Qlux devices
+    if (this.authService.isQluxGroupAdmin || user?.projectName?.toLowerCase().includes('qlux')) {
+      return this.allCameras.filter(c => c.projectName === 'Qlux Device' || !c.projectId);
+    }
+
+    // When a specific project is selected (Super Admin) or user belongs to a specific project
     if (targetProjectId !== null && targetProjectId !== undefined) {
-      // Find the name of the project if available in this.projects
       const proj = this.projects.find(p => p.id === targetProjectId);
-      const projName = proj ? proj.name?.toLowerCase().trim() : '';
+      const projName = (proj ? proj.name : (user?.projectName || '')).toLowerCase().trim();
 
       return this.allCameras.filter(c => {
         // Match by projectId if assigned
         if (c.projectId !== undefined && c.projectId !== null) {
           return Number(c.projectId) === Number(targetProjectId);
         }
-        // Match by projectName (e.g. 'Qlux Device')
+        // Match by projectName
         if (c.projectName && projName) {
           return c.projectName.toLowerCase().trim() === projName;
         }
         return false;
       });
-    }
-
-    // If user is Qlux Group Admin
-    if (this.authService.isQluxGroupAdmin) {
-      return this.allCameras.filter(c => c.projectName === 'Qlux Device');
     }
 
     return [];

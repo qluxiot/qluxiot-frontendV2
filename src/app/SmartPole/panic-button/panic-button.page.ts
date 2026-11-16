@@ -101,10 +101,15 @@ export class PanicButtonPage implements OnInit, OnDestroy {
       return this.allDevices;
     }
 
-    // When a specific project is selected (Super Admin) or user belongs to a project
+    // If logged in as Qlux Group Admin (or project name is Qlux Device), show Qlux devices
+    if (this.authService.isQluxGroupAdmin || user?.projectName?.toLowerCase().includes('qlux')) {
+      return this.allDevices.filter(d => d.projectName === 'Qlux Device' || !d.projectId);
+    }
+
+    // When a specific project is selected (Super Admin) or user belongs to a specific project
     if (targetProjectId !== null && targetProjectId !== undefined) {
       const proj = this.projects.find(p => p.id === targetProjectId);
-      const projName = proj ? proj.name?.toLowerCase().trim() : '';
+      const projName = (proj ? proj.name : (user?.projectName || '')).toLowerCase().trim();
 
       return this.allDevices.filter(d => {
         if (d.projectId !== undefined && d.projectId !== null) {
@@ -115,11 +120,6 @@ export class PanicButtonPage implements OnInit, OnDestroy {
         }
         return false;
       });
-    }
-
-    // If user is Qlux Group Admin
-    if (this.authService.isQluxGroupAdmin) {
-      return this.allDevices.filter(d => d.projectName === 'Qlux Device');
     }
 
     return [];

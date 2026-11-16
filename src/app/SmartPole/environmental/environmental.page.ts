@@ -93,10 +93,15 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
       return this.allPoles;
     }
 
-    // When a specific project is selected (Super Admin) or user belongs to a project
+    // If logged in as Qlux Group Admin (or project name is Qlux Device), show Qlux devices
+    if (this.authService.isQluxGroupAdmin || user?.projectName?.toLowerCase().includes('qlux')) {
+      return this.allPoles.filter(p => p.projectName === 'Qlux Device' || !p.projectId);
+    }
+
+    // When a specific project is selected (Super Admin) or user belongs to a specific project
     if (targetProjectId !== null && targetProjectId !== undefined) {
       const proj = this.projects.find(p => p.id === targetProjectId);
-      const projName = proj ? proj.name?.toLowerCase().trim() : '';
+      const projName = (proj ? proj.name : (user?.projectName || '')).toLowerCase().trim();
 
       return this.allPoles.filter(p => {
         if (p.projectId !== undefined && p.projectId !== null) {
@@ -107,11 +112,6 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
         }
         return false;
       });
-    }
-
-    // If user is Qlux Group Admin
-    if (this.authService.isQluxGroupAdmin) {
-      return this.allPoles.filter(p => p.projectName === 'Qlux Device');
     }
 
     return [];
@@ -199,24 +199,29 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     this.http.get<any>(`${environment.apiUrl}/api/environmental/live`).subscribe({
       next: (data) => {
         if (!data) return;
-        const pole = this.poles[0]; // SP-001 connected to live hardware
-        pole.isOnline = data.isOnline;
-        pole.lastUpdated = 'just now';
+        // Always update the base hardware pole in allPoles
+        const hardwarePole = this.allPoles.find(p => p.id === 1);
+        if (!hardwarePole) return;
+
+        hardwarePole.isOnline = data.isOnline;
+        hardwarePole.lastUpdated = 'just now';
 
         // Update each sensor metric
-        this.updateReading(pole, 'Temperature', data.temperature, '°C', data.temperature > 35 ? 'danger' : data.temperature > 31 ? 'warning' : 'good');
-        this.updateReading(pole, 'Humidity', data.humidity, '%', data.humidity > 80 ? 'warning' : 'good');
-        this.updateReading(pole, 'PM2.5', data.pm25, 'µg/m³', data.pm25 > 55 ? 'danger' : data.pm25 > 35 ? 'warning' : 'good');
-        this.updateReading(pole, 'PM10', data.pm10, 'µg/m³', data.pm10 > 100 ? 'danger' : data.pm10 > 50 ? 'warning' : 'good');
-        this.updateReading(pole, 'CO₂', data.co2 || 415, 'ppm', (data.co2 || 415) > 1000 ? 'warning' : 'good');
-        this.updateReading(pole, 'Noise Level', data.noise, 'dB', data.noise > 75 ? 'danger' : data.noise > 65 ? 'warning' : 'good');
-        this.updateReading(pole, 'Pressure', data.pressure, 'kPa', 'good');
-        this.updateReading(pole, 'Wind Speed', data.windSpeed, 'm/s', data.windSpeed > 10 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'Temperature', data.temperature, '°C', data.temperature > 35 ? 'danger' : data.temperature > 31 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'Humidity', data.humidity, '%', data.humidity > 80 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'PM2.5', data.pm25, 'µg/m³', data.pm25 > 55 ? 'danger' : data.pm25 > 35 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'PM10', data.pm10, 'µg/m³', data.pm10 > 100 ? 'danger' : data.pm10 > 50 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'CO₂', data.co2 || 415, 'ppm', (data.co2 || 415) > 1000 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'Noise Level', data.noise, 'dB', data.noise > 75 ? 'danger' : data.noise > 65 ? 'warning' : 'good');
+        this.updateReading(hardwarePole, 'Pressure', data.pressure, 'kPa', 'good');
+        this.updateReading(hardwarePole, 'Wind Speed', data.windSpeed, 'm/s', data.windSpeed > 10 ? 'warning' : 'good');
       },
       error: () => {
-        // If backend connection fails, mark live pole offline
-        this.poles[0].isOnline = false;
-        this.poles[0].lastUpdated = 'offline';
+        const hardwarePole = this.allPoles.find(p => p.id === 1);
+        if (hardwarePole) {
+          hardwarePole.isOnline = false;
+          hardwarePole.lastUpdated = 'offline';
+        }
       }
     });
   }

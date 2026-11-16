@@ -138,14 +138,14 @@ export class AuthService {
   }
 
   get isQluxGroupAdmin(): boolean {
-    const username = this.getUsername()?.toLowerCase().trim();
-    const name = localStorage.getItem('name')?.toLowerCase().trim();
-    const projectName = localStorage.getItem('projectName')?.toLowerCase().trim();
+    const username = (this.getUsername() || localStorage.getItem('username') || '').toLowerCase().trim();
+    const name = (localStorage.getItem('name') || '').toLowerCase().trim();
+    const projectName = (localStorage.getItem('projectName') || '').toLowerCase().trim();
 
     return (
-      username === 'qluxgroup' ||
-      name === 'qlux group admin' ||
-      projectName === 'qlux device'
+      username.includes('qluxgroup') ||
+      name.includes('qlux') ||
+      projectName.includes('qlux')
     );
   }
 
