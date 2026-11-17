@@ -127,30 +127,35 @@ export class AuthService {
   }
 
   get isJohorPortAdmin(): boolean {
-    const username = this.getUsername();
-    const name = localStorage.getItem('name');
+    const username = (this.getUsername() || localStorage.getItem('username') || '').toLowerCase().trim();
+    const name = (localStorage.getItem('name') || '').toLowerCase().trim();
+    const projectName = (localStorage.getItem('projectName') || '').toLowerCase().trim();
     
     const isMatch = 
-      (username && username.toLowerCase().trim() === 'johorport') || 
-      (name && name.toLowerCase().trim() === 'johorport');
+      username === '123' || 
+      username === 'johorport' || 
+      name === 'qlux group' || 
+      projectName === 'qlux group';
       
     return !!isMatch;
   }
 
-  get isQluxGroupAdmin(): boolean {
+  get isQluxDeviceAdmin(): boolean {
     const username = (this.getUsername() || localStorage.getItem('username') || '').toLowerCase().trim();
-    const name = (localStorage.getItem('name') || '').toLowerCase().trim();
+    const role = (localStorage.getItem('role') || '').toLowerCase().trim();
     const projectName = (localStorage.getItem('projectName') || '').toLowerCase().trim();
+    const isAdmin = role.includes('admin') || this.isSuperAdmin();
 
-    return (
-      username.includes('qluxgroup') ||
-      name.includes('qlux') ||
-      projectName.includes('qlux')
-    );
+    // Strictly grant Smart Pole access to users in "Qlux Device" project with Admin role, or username 'qluxgroup'
+    return isAdmin && (projectName === 'qlux device' || username === 'qluxgroup');
+  }
+
+  get isQluxGroupAdmin(): boolean {
+    return this.isQluxDeviceAdmin;
   }
 
   get canAccessSmartPole(): boolean {
-    return this.isSuperAdmin() || this.isQluxGroupAdmin;
+    return this.isSuperAdmin() || this.isQluxDeviceAdmin;
   }
 
   readonly MBS_CLONE_MAPPING: { [key: string]: { name: string; serial: string } } = {

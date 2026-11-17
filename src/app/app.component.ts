@@ -76,8 +76,12 @@ export class AppComponent implements OnInit {
     return this.authService.isJohorPortAdmin;
   }
 
+  get isQluxDeviceAdmin(): boolean {
+    return this.authService.isQluxDeviceAdmin;
+  }
+
   get isQluxGroupAdmin(): boolean {
-    return this.authService.isQluxGroupAdmin;
+    return this.authService.isQluxDeviceAdmin;
   }
 
   get canAccessSmartPole(): boolean {

@@ -101,8 +101,8 @@ export class PanicButtonPage implements OnInit, OnDestroy {
       return this.allDevices;
     }
 
-    // If logged in as Qlux Group Admin (or project name is Qlux Device), show Qlux devices
-    if (this.authService.isQluxGroupAdmin || user?.projectName?.toLowerCase().includes('qlux')) {
+    // If logged in as Qlux Device Admin (or project name is strictly Qlux Device), show Qlux devices
+    if (this.authService.isQluxDeviceAdmin || user?.projectName?.toLowerCase().trim() === 'qlux device') {
       return this.allDevices.filter(d => d.projectName === 'Qlux Device' || !d.projectId);
     }
 
