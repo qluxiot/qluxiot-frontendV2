@@ -108,15 +108,21 @@
       </div>
 
       <!-- Total Power -->
-      <div class="bg-white border border-outline-variant rounded-lg p-lg shadow-sm flex items-center gap-md">
-        <div class="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center flex-shrink-0">
+      <div class="bg-white border border-outline-variant rounded-lg p-lg shadow-sm flex items-start gap-md">
+        <div class="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
           <span class="material-symbols-outlined text-tertiary text-[24px]">bar_chart</span>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col flex-1">
           <span class="text-label-md font-label-md text-secondary font-semibold">Total Consumption</span>
           <span class="text-headline-lg font-headline-lg text-on-surface leading-none mt-1">
             {{ summary.totalPowerConsumption | number:'1.0-2' }} <span class="text-body-sm text-secondary">kWh</span>
           </span>
+          <div class="mt-2 pt-2 border-t border-outline-variant/60 flex flex-wrap items-center gap-x-2 text-body-xs">
+            <span class="text-secondary font-medium">LED: <strong class="text-on-surface font-semibold">{{ summary.totalPowerConsumption | number:'1.0-2' }} kWh</strong></span>
+            <span class="text-outline">vs</span>
+            <span class="text-secondary font-medium">HPS: <strong class="text-on-surface font-semibold">{{ hpsBaselinePowerKWh | number:'1.0-2' }} kWh</strong></span>
+          </div>
+          <span class="text-body-xs text-secondary mt-1">Based on 250W HPS baseline</span>
         </div>
       </div>
     </div>
@@ -138,30 +144,40 @@
       </div>
 
       <!-- CO₂ Emissions Prevented -->
-      <div class="bg-white border border-outline-variant rounded-lg p-lg shadow-sm flex items-center gap-md">
-        <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+      <div class="bg-white border border-outline-variant rounded-lg p-lg shadow-sm flex items-start gap-md">
+        <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
           <span class="material-symbols-outlined text-emerald-600 text-[24px]">eco</span>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col flex-1">
           <span class="text-label-md font-label-md text-secondary font-semibold">CO₂ Prevented</span>
           <span class="text-headline-lg font-headline-lg text-on-surface leading-none mt-1">
             {{ summary.co2PreventedKg | number:'1.0-2' }} <span class="text-body-sm text-secondary">kg</span>
           </span>
-          <span class="text-body-xs text-secondary mt-0.5">vs. traditional HPS lamps (0.65 kg/kWh)</span>
+          <div class="mt-2 pt-2 border-t border-outline-variant/60 flex flex-wrap items-center gap-x-2 text-body-xs">
+            <span class="text-secondary font-medium">LED: <strong class="text-on-surface font-semibold">{{ ledCo2EmissionsKg | number:'1.0-2' }} kg</strong></span>
+            <span class="text-outline">vs</span>
+            <span class="text-secondary font-medium">HPS: <strong class="text-on-surface font-semibold">{{ hpsCo2EmissionsKg | number:'1.0-2' }} kg</strong></span>
+          </div>
+          <span class="text-body-xs text-secondary mt-1">Based on grid emission factor (0.65 kg/kWh)</span>
         </div>
       </div>
 
       <!-- Cost Saved -->
-      <div class="bg-white border border-outline-variant rounded-lg p-lg shadow-sm flex items-center gap-md">
-        <div class="w-12 h-12 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+      <div class="bg-white border border-outline-variant rounded-lg p-lg shadow-sm flex items-start gap-md">
+        <div class="w-12 h-12 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
           <span class="material-symbols-outlined text-teal-600 text-[24px]">savings</span>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col flex-1">
           <span class="text-label-md font-label-md text-secondary font-semibold">Cost Saved</span>
           <span class="text-headline-lg font-headline-lg text-on-surface leading-none mt-1">
             RM {{ summary.costSavedRM | number:'1.0-2' }}
           </span>
-          <span class="text-body-xs text-secondary mt-0.5">vs. traditional 250W HPS lamps</span>
+          <div class="mt-2 pt-2 border-t border-outline-variant/60 flex flex-wrap items-center gap-x-2 text-body-xs">
+            <span class="text-secondary font-medium">LED: <strong class="text-on-surface font-semibold">RM {{ summary.estimatedCostRM | number:'1.0-2' }}</strong></span>
+            <span class="text-outline">vs</span>
+            <span class="text-secondary font-medium">HPS: <strong class="text-on-surface font-semibold">RM {{ hpsBaselineCostRM | number:'1.0-2' }}</strong></span>
+          </div>
+          <span class="text-body-xs text-secondary mt-1">Based on 250W HPS & TNB Tariff G</span>
         </div>
       </div>
     </div>

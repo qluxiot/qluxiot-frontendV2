@@ -110,6 +110,27 @@ export class DashboardPage implements OnInit, AfterViewInit {
     return this.authService.isSuperAdmin() || role === 'superadmin';
   }
 
+  get hpsBaselinePowerKWh(): number {
+    return (Number(this.summary.totalPowerConsumption) || 0) + (Number(this.summary.energySavedKWh) || 0);
+  }
+
+  get ledCo2EmissionsKg(): number {
+    return (Number(this.summary.totalPowerConsumption) || 0) * 0.65;
+  }
+
+  get hpsCo2EmissionsKg(): number {
+    return this.ledCo2EmissionsKg + (Number(this.summary.co2PreventedKg) || 0);
+  }
+
+  get hpsBaselineCostRM(): number {
+    return (Number(this.summary.estimatedCostRM) || 0) + (Number(this.summary.costSavedRM) || 0);
+  }
+
+  get costSavingsPercent(): number {
+    if (!this.hpsBaselineCostRM) return 0;
+    return ((Number(this.summary.costSavedRM) || 0) / this.hpsBaselineCostRM) * 100;
+  }
+
   constructor(
     private http: HttpClient, 
     private authService: AuthService,
