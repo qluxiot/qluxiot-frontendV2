@@ -2,6 +2,15 @@
   --background: #f6f8fb;
 }
 
+ion-modal.calendar-modal {
+  --width: fit-content;
+  --min-width: 340px;
+  --max-width: 380px;
+  --height: fit-content;
+  --border-radius: 16px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.25);
+}
+
 .charts-container {
   display: grid;
   gap: 24px;

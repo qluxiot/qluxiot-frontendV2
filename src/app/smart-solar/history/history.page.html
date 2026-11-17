@@ -38,16 +38,50 @@
                 class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center text-secondary hover:border-primary hover:text-primary">
           <span class="material-symbols-outlined text-[18px]">chevron_left</span>
         </button>
-        <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">
+        <div (click)="isDatePickerOpen = true"
+             class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors cursor-pointer select-none">
           <span class="material-symbols-outlined text-secondary text-[20px]">calendar_today</span>
-          <input type="date" [(ngModel)]="selectedDate" (change)="fetchHistory()"
-                 class="text-body-md font-body-md text-on-surface bg-transparent border-none focus:ring-0 p-0 cursor-pointer" />
+          <span class="text-body-md font-body-md font-semibold text-on-surface">{{ selectedDate }}</span>
+          <span *ngIf="activeDatesSet.has(selectedDate)" class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 ml-1" title="Data available on this day"></span>
         </div>
         <button (click)="nextDate()"
                 class="px-sm py-1 border border-outline-variant rounded bg-white transition-colors flex items-center justify-center text-secondary hover:border-primary hover:text-primary">
           <span class="material-symbols-outlined text-[18px]">chevron_right</span>
         </button>
       </div>
+
+      <!-- Calendar Modal with Green Dots for Online Dates -->
+      <ion-modal [isOpen]="isDatePickerOpen" (didDismiss)="isDatePickerOpen = false" class="calendar-modal">
+        <ng-template>
+          <div class="p-4 bg-white rounded-2xl shadow-xl flex flex-col items-center">
+            <div class="w-full flex items-center justify-between pb-3 mb-2 border-b border-outline-variant">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">event</span>
+                <span class="text-title-sm font-bold text-on-surface">Select Date</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-body-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Online / Data Recorded
+              </div>
+            </div>
+            
+            <ion-datetime
+              presentation="date"
+              [value]="selectedDate"
+              [highlightedDates]="highlightedDates"
+              (ionChange)="onCalendarDateChange($event)"
+              class="w-full">
+            </ion-datetime>
+
+            <div class="w-full flex justify-end gap-2 pt-3 border-t border-outline-variant">
+              <button (click)="isDatePickerOpen = false"
+                      class="px-4 py-1.5 text-body-sm font-semibold text-secondary hover:bg-slate-100 rounded-lg transition-colors">
+                Close
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </ion-modal>
 
       <!-- Interval Selector -->
       <div class="flex items-center gap-sm px-md py-2 bg-background border border-outline-variant rounded hover:border-primary transition-colors">

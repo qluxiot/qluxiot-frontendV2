@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import {
-  IonContent
+  IonContent,
+  IonModal,
+  IonDatetime
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline, flashOutline, batteryHalfOutline, bulbOutline, thermometerOutline, calendarOutline, wifiOutline } from 'ionicons/icons';
@@ -19,7 +21,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './history.page.html',
   styleUrls: ['./history.page.scss'],
   standalone: true,
-  imports: [CustomHeaderComponent, IonContent, CommonModule, FormsModule, BaseChartDirective],
+  imports: [CustomHeaderComponent, IonContent, IonModal, IonDatetime, CommonModule, FormsModule, BaseChartDirective],
   providers: [provideCharts(withDefaultRegisterables())]
 })
 export class HistoryPage implements OnInit {
@@ -28,6 +30,9 @@ export class HistoryPage implements OnInit {
   selectedDateIso: string = new Date().toISOString();
   selectedDate: string = format(new Date(), 'yyyy-MM-dd');
   selectedInterval: string = '30';
+  
+  activeDatesSet: Set<string> = new Set<string>();
+  isDatePickerOpen: boolean = false;
   
   projects: any[] = [];
   selectedProjectId: number | null = null;
@@ -128,7 +133,43 @@ export class HistoryPage implements OnInit {
 
   selectDevice(device: any) {
     this.selectedDevice = device;
+    this.fetchActiveDates();
     this.fetchHistory();
+  }
+
+  fetchActiveDates() {
+    if (!this.selectedDevice) return;
+    let targetSerial = this.selectedDevice.serial;
+    if (this.selectedDevice.isClone && this.selectedDevice.real_serial) {
+       targetSerial = this.selectedDevice.real_serial;
+    }
+    this.http.get<string[]>(`${environment.apiUrl}/api/solar/devices/${targetSerial}/active-dates`).subscribe({
+      next: (dates) => {
+        this.activeDatesSet = new Set(dates || []);
+      },
+      error: (err) => console.error('Error fetching active dates', err)
+    });
+  }
+
+  highlightedDates = (isoString: string) => {
+    const dateStr = isoString.split('T')[0];
+    if (this.activeDatesSet.has(dateStr)) {
+      return {
+        textColor: '#047857',
+        backgroundColor: '#d1fae5',
+      };
+    }
+    return undefined;
+  };
+
+  onCalendarDateChange(event: any) {
+    if (event.detail && event.detail.value) {
+      const val = Array.isArray(event.detail.value) ? event.detail.value[0] : event.detail.value;
+      this.selectedDate = val.split('T')[0];
+      this.selectedDateIso = new Date(this.selectedDate).toISOString();
+      this.isDatePickerOpen = false;
+      this.fetchHistory();
+    }
   }
 
   prevDate() {
