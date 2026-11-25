@@ -28,54 +28,6 @@
       </div>
     </div>
 
-    <!-- Summary Row -->
-    <div class="summary-row">
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(27,43,58,0.1);">
-          <span class="material-symbols-outlined" style="color:#1b2b3a; font-size:22px;">crisis_alert</span>
-        </div>
-        <div>
-          <div class="summary-value">{{ totalDevices }}</div>
-          <div class="summary-label">Total Terminals</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
-          <ion-icon name="alert-circle" style="color:#ef4444;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color:#ef4444;">{{ activeAlerts }}</div>
-          <div class="summary-label">Active Alerts</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(16,185,129,0.1);">
-          <ion-icon name="shield-checkmark-outline" style="color:#10b981;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color:#10b981;">{{ standbyCount }}</div>
-          <div class="summary-label">Standby</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(100,116,139,0.1);">
-          <ion-icon name="alert-circle" style="color:#94a3b8;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color:#94a3b8;">{{ offlineCount }}</div>
-          <div class="summary-label">Offline</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filter Tabs -->
-    <div class="filter-bar">
-      <button class="filter-tab" [class.active]="selectedFilter === 'all'" (click)="selectedFilter = 'all'">All ({{ totalDevices }})</button>
-      <button class="filter-tab active-tab" [class.active]="selectedFilter === 'active'" (click)="selectedFilter = 'active'">🔴 Alert ({{ activeAlerts }})</button>
-      <button class="filter-tab" [class.active]="selectedFilter === 'standby'" (click)="selectedFilter = 'standby'">Standby ({{ standbyCount }})</button>
-      <button class="filter-tab" [class.active]="selectedFilter === 'offline'" (click)="selectedFilter = 'offline'">Offline ({{ offlineCount }})</button>
-    </div>
-
     <!-- Device Grid -->
     <div *ngIf="filteredDevices.length > 0" class="devices-grid">
       <div class="device-card" *ngFor="let d of filteredDevices"
@@ -101,12 +53,6 @@
           <div class="device-location">
             <ion-icon name="location-outline"></ion-icon>
             {{ d.location }}
-          </div>
-
-          <!-- Network info tag -->
-          <div class="flex items-center gap-2 text-xs text-slate-500 my-2 px-1">
-            <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">IP: {{ d.ipAddress || '192.168.155.241' }}</span>
-            <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">MAC: {{ d.macAddress || 'b0:a8:79:7a:ba:98' }}</span>
           </div>
 
           <!-- Active Alert Details -->
@@ -148,14 +94,6 @@
               <div>
                 <div class="stat-val">{{ d.incidentCount }}</div>
                 <div class="stat-lbl">Incidents</div>
-              </div>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-              <ion-icon name="hardware-chip-outline" style="color: #3b82f6;"></ion-icon>
-              <div>
-                <div class="stat-val text-blue-600">LAN</div>
-                <div class="stat-lbl">Gateway</div>
               </div>
             </div>
           </div>

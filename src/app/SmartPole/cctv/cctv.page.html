@@ -32,59 +32,8 @@
       </div>
     </div>
 
-    <!-- Summary Row -->
-    <div class="summary-row">
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(27,43,58,0.08);">
-          <ion-icon name="videocam-outline" style="color: #1b2b3a;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value">{{ totalCameras }}</div>
-          <div class="summary-label">Total Cameras</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(16,185,129,0.1);">
-          <ion-icon name="eye-outline" style="color: #10b981;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color: #10b981;">{{ onlineCameras }}</div>
-          <div class="summary-label">Online</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
-          <ion-icon name="videocam-off-outline" style="color: #ef4444;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color: #ef4444;">{{ offlineCameras }}</div>
-          <div class="summary-label">Offline</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
-          <span class="material-symbols-outlined" style="color: #ef4444; font-size: 22px;">fiber_manual_record</span>
-        </div>
-        <div>
-          <div class="summary-value" style="color: #ef4444;">{{ recordingCameras }}</div>
-          <div class="summary-label">Recording</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filter & View Controls -->
-    <div class="controls-bar">
-      <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="selectedFilter === 'all'" (click)="selectedFilter = 'all'">
-          All ({{ totalCameras }})
-        </button>
-        <button class="filter-tab" [class.active]="selectedFilter === 'online'" (click)="selectedFilter = 'online'">
-          Online ({{ onlineCameras }})
-        </button>
-        <button class="filter-tab" [class.active]="selectedFilter === 'offline'" (click)="selectedFilter = 'offline'">
-          Offline ({{ offlineCameras }})
-        </button>
-      </div>
+    <!-- View Controls -->
+    <div class="controls-bar" style="justify-content: flex-end;">
       <div class="view-toggle">
         <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grid view">
           <span class="material-symbols-outlined" style="font-size: 20px;">grid_view</span>
@@ -102,7 +51,29 @@
         <!-- Video Feed Placeholder -->
         <div class="video-feed" [style.background]="cam.thumbnailGradient">
 
-          <iframe *ngIf="cam.isOnline && cam.safeStreamUrl" [src]="cam.safeStreamUrl" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1;"></iframe>
+          <iframe *ngIf="cam.isOnline && cam.isPlaying && cam.safeStreamUrl" [src]="cam.safeStreamUrl" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1;"></iframe>
+
+          <!-- Click-to-Play / Continue Overlay -->
+          <div *ngIf="cam.isOnline && !cam.isPlaying" (click)="startStream(cam)"
+            style="position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: rgba(15, 23, 42, 0.55); cursor: pointer; color: #fff; text-align: center; padding: 12px;">
+            <ion-icon name="play-circle-outline" style="font-size: 48px; color: #38bdf8;"></ion-icon>
+            <span style="font-weight: 600; font-size: 14px;">
+              {{ cam.streamTimedOut ? 'Continue Live View' : 'Play Live View' }}
+            </span>
+            <span style="font-size: 11px; opacity: 0.85;">
+              {{ cam.streamTimedOut ? 'Paused after 10 min to save data' : 'Click to stream (10 min auto-stop)' }}
+            </span>
+          </div>
+
+          <!-- Active Stream Timer & Stop Button -->
+          <div *ngIf="cam.isOnline && cam.isPlaying"
+            style="position: absolute; top: 10px; left: 10px; z-index: 5; display: flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.75); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px;">
+            <span>{{ formatRemaining(cam.remainingSeconds) }}</span>
+            <button (click)="stopStream(cam)"
+              style="background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; cursor: pointer;">
+              Stop
+            </button>
+          </div>
 
           <!-- Offline Overlay -->
           <div *ngIf="!cam.isOnline" class="offline-overlay">

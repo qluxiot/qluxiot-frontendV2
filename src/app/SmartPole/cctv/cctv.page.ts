@@ -33,6 +33,9 @@ export interface CctvCamera {
   overlayColor: string;
   streamUrl?: string;
   safeStreamUrl?: SafeResourceUrl;
+  isPlaying?: boolean;
+  streamTimedOut?: boolean;
+  remainingSeconds?: number;
 }
 
 @Component({
@@ -56,6 +59,8 @@ export class CctvPage implements OnInit, OnDestroy {
   selectedFilter: 'all' | 'online' | 'offline' = 'all';
   viewMode: 'grid' | 'list' = 'grid';
   private tickInterval: any;
+  private streamTimers = new Map<number, any>();
+  readonly STREAM_DURATION_SECONDS = 600; // 10 minutes
   currentTime: string = '';
 
   allCameras: CctvCamera[] = [];
@@ -110,7 +115,7 @@ export class CctvPage implements OnInit, OnDestroy {
   get totalCameras(): number { return this.cameras.length; }
   get onlineCameras(): number { return this.cameras.filter(c => c.isOnline).length; }
   get offlineCameras(): number { return this.cameras.filter(c => !c.isOnline).length; }
-  get recordingCameras(): number { return this.cameras.filter(c => c.recordingStatus === 'recording').length; }
+  get recordingCameras(): number { return this.cameras.filter(c => c.isOnline && c.isPlaying).length; }
 
   constructor(
     private http: HttpClient,
@@ -148,9 +153,9 @@ export class CctvPage implements OnInit, OnDestroy {
     this.http.get<CctvCamera[]>(`${environment.apiUrl}/cctv/cameras`).subscribe({
       next: (data) => {
         this.allCameras = data.map(cam => {
-          if (cam.streamUrl) {
-            cam.safeStreamUrl = this.sanitizer.bypassSecurityTrustResourceUrl(cam.streamUrl);
-          }
+          cam.isPlaying = false;
+          cam.streamTimedOut = false;
+          cam.safeStreamUrl = undefined;
           return cam;
         });
       },
@@ -162,6 +167,46 @@ export class CctvPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.tickInterval) clearInterval(this.tickInterval);
+    this.allCameras.forEach(cam => this.stopStream(cam));
+  }
+
+  startStream(cam: CctvCamera) {
+    if (!cam.isOnline || !cam.streamUrl) return;
+    this.stopStream(cam);
+
+    cam.isPlaying = true;
+    cam.streamTimedOut = false;
+    cam.remainingSeconds = this.STREAM_DURATION_SECONDS;
+    cam.safeStreamUrl = this.sanitizer.bypassSecurityTrustResourceUrl(cam.streamUrl);
+
+    const timer = setInterval(() => {
+      if (cam.remainingSeconds && cam.remainingSeconds > 1) {
+        cam.remainingSeconds--;
+      } else {
+        this.stopStream(cam, true);
+      }
+    }, 1000);
+
+    this.streamTimers.set(cam.id, timer);
+  }
+
+  stopStream(cam: CctvCamera, timedOut: boolean = false) {
+    const existingTimer = this.streamTimers.get(cam.id);
+    if (existingTimer) {
+      clearInterval(existingTimer);
+      this.streamTimers.delete(cam.id);
+    }
+    cam.isPlaying = false;
+    cam.streamTimedOut = timedOut;
+    cam.remainingSeconds = 0;
+    cam.safeStreamUrl = undefined;
+  }
+
+  formatRemaining(seconds?: number): string {
+    const s = seconds || 0;
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
   private tick() {

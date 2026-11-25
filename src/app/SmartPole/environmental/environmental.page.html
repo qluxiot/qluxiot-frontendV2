@@ -28,46 +28,6 @@
       </div>
     </div>
 
-    <!-- Summary Bar -->
-    <div class="summary-row">
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(27,43,58,0.1);">
-          <ion-icon name="location-outline" style="color: #1b2b3a;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value">{{ totalPoles }}</div>
-          <div class="summary-label">Total Poles</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(16,185,129,0.1);">
-          <ion-icon name="checkmark-circle" style="color: #10b981;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color: #10b981;">{{ onlinePoles }}</div>
-          <div class="summary-label">Online</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(239,68,68,0.1);">
-          <ion-icon name="alert-circle" style="color: #ef4444;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color: #ef4444;">{{ offlinePoles }}</div>
-          <div class="summary-label">Offline</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(245,158,11,0.1);">
-          <ion-icon name="warning-outline" style="color: #f59e0b;"></ion-icon>
-        </div>
-        <div>
-          <div class="summary-value" style="color: #f59e0b;">{{ alertCount }}</div>
-          <div class="summary-label">Alerts Active</div>
-        </div>
-      </div>
-    </div>
-
     <!-- Main Layout: Pole List + Detail -->
     <div class="main-layout" *ngIf="poles.length > 0 && selectedPole">
 
@@ -142,12 +102,35 @@
         <div class="chart-placeholder-section">
           <div class="panel-header" style="margin-bottom: 16px;">
             <span class="material-symbols-outlined panel-icon">show_chart</span>
-            <span class="panel-title">24-Hour Historical Trend</span>
+            <span class="panel-title">24-Hour Historical Trend (30-min intervals)</span>
+            <select [(ngModel)]="selectedHistoryMetric"
+              style="margin-left: auto; font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: transparent;">
+              <option value="temperature">Temperature (°C)</option>
+              <option value="humidity">Humidity (%)</option>
+              <option value="pm25">PM2.5 (µg/m³)</option>
+              <option value="pm10">PM10 (µg/m³)</option>
+              <option value="noise">Noise (dB)</option>
+            </select>
           </div>
-          <div class="chart-placeholder">
+          <div *ngIf="historyData.length === 0" class="chart-placeholder">
             <span class="material-symbols-outlined chart-placeholder-icon">insert_chart</span>
-            <p class="chart-placeholder-text">Historical chart will be available once connected to the live API endpoint.</p>
-            <span class="chart-placeholder-tag">Mock Up</span>
+            <p class="chart-placeholder-text">No historical snapshots yet. Data is saved automatically every 30 minutes.</p>
+          </div>
+          <div *ngIf="historyData.length > 0" style="padding: 12px 4px;">
+            <svg viewBox="0 0 600 140" style="width: 100%; height: 160px; overflow: visible;">
+              <polyline *ngIf="historyData.length >= 2"
+                [attr.points]="historyPolyline"
+                fill="none"
+                stroke="#0ea5e9"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 4px;">
+              <span>{{ historyData[0]?.recordedAt | date:'shortTime' }}</span>
+              <span>{{ historyData.length }} records (Latest: {{ historyData[historyData.length - 1]?.[selectedHistoryMetric] }} {{ historyUnit }})</span>
+              <span>{{ historyData[historyData.length - 1]?.recordedAt | date:'shortTime' }}</span>
+            </div>
           </div>
         </div>
 

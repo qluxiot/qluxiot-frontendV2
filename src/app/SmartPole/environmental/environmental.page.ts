@@ -55,6 +55,8 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
 
   selectedPoleId: number = 1;
   private refreshInterval: any;
+  historyData: any[] = [];
+  selectedHistoryMetric: 'temperature' | 'humidity' | 'pm25' | 'pm10' | 'noise' = 'temperature';
 
   allPoles: SmartPole[] = [
     {
@@ -130,14 +132,45 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     return this.selectedPole.readings?.filter(r => r.status === 'danger' || r.status === 'warning').length || 0;
   }
 
+  private calcSubAqi(c: number, breakpoints: [number, number, number, number][]): number {
+    for (const [cLow, cHigh, iLow, iHigh] of breakpoints) {
+      if (c <= cHigh) {
+        return Math.round(((iHigh - iLow) / (cHigh - cLow)) * (c - cLow) + iLow);
+      }
+    }
+    return 500;
+  }
+
   get aqiLevel(): { label: string; color: string; value: number } {
     if (!this.selectedPole) return { label: 'N/A', color: '#94a3b8', value: 0 };
-    const pm25 = this.selectedPole.readings?.find(r => r.label === 'PM2.5')?.value ?? 0;
     if (!this.selectedPole.isOnline) return { label: 'Offline', color: '#94a3b8', value: 0 };
-    if (pm25 <= 12) return { label: 'Good', color: '#10b981', value: Math.round(pm25 * 4) };
-    if (pm25 <= 35.4) return { label: 'Moderate', color: '#f59e0b', value: Math.round(pm25 * 2.2) };
-    if (pm25 <= 55.4) return { label: 'Unhealthy (Sensitive)', color: '#f97316', value: Math.round(pm25 * 1.5) };
-    return { label: 'Unhealthy', color: '#ef4444', value: Math.round(pm25 * 1.2) };
+
+    const pm25 = this.selectedPole.readings?.find(r => r.label === 'PM2.5')?.value ?? 0;
+    const pm10 = this.selectedPole.readings?.find(r => r.label === 'PM10')?.value ?? 0;
+
+    const aqi25 = this.calcSubAqi(pm25, [
+      [0, 12.0, 0, 50],
+      [12.1, 35.4, 51, 100],
+      [35.5, 55.4, 101, 150],
+      [55.5, 150.4, 151, 200],
+      [150.5, 250.4, 201, 300],
+      [250.5, 500.4, 301, 500],
+    ]);
+    const aqi10 = this.calcSubAqi(pm10, [
+      [0, 54, 0, 50],
+      [55, 154, 51, 100],
+      [155, 254, 101, 150],
+      [255, 354, 151, 200],
+      [355, 424, 201, 300],
+      [425, 604, 301, 500],
+    ]);
+
+    const value = Math.max(aqi25, aqi10);
+    if (value <= 50) return { label: 'Good', color: '#10b981', value };
+    if (value <= 100) return { label: 'Moderate', color: '#f59e0b', value };
+    if (value <= 150) return { label: 'Unhealthy (Sensitive)', color: '#f97316', value };
+    if (value <= 200) return { label: 'Unhealthy', color: '#ef4444', value };
+    return { label: 'Very Unhealthy', color: '#991b1b', value };
   }
 
   constructor(
@@ -154,6 +187,7 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadProjects();
     this.fetchLiveTelemetry();
+    this.fetchHistory();
     // Poll live backend endpoint every 2 seconds
     this.refreshInterval = setInterval(() => {
       this.fetchLiveTelemetry();
@@ -193,6 +227,45 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
 
   getStatusBadgeText(status: 'good' | 'warning' | 'danger'): string {
     return { good: 'Normal', warning: 'Warning', danger: 'Alert' }[status];
+  }
+
+  fetchHistory() {
+    this.http.get<any[]>(`${environment.apiUrl}/api/environmental/history?limit=48`).subscribe({
+      next: (data) => {
+        this.historyData = data || [];
+      },
+      error: (err) => console.error('Error loading environmental history', err)
+    });
+  }
+
+  get historyPolyline(): string {
+    if (this.historyData.length < 2) return '';
+    const vals = this.historyData.map(d => Number(d[this.selectedHistoryMetric] ?? 0));
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const range = max - min || 1;
+    const width = 600;
+    const height = 140;
+    const pad = 12;
+
+    return vals
+      .map((v, i) => {
+        const x = (i / (vals.length - 1)) * (width - pad * 2) + pad;
+        const y = height - pad - ((v - min) / range) * (height - pad * 2);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+  }
+
+  get historyUnit(): string {
+    const units: Record<string, string> = {
+      temperature: '°C',
+      humidity: '%',
+      pm25: 'µg/m³',
+      pm10: 'µg/m³',
+      noise: 'dB'
+    };
+    return units[this.selectedHistoryMetric] || '';
   }
 
   private fetchLiveTelemetry() {
