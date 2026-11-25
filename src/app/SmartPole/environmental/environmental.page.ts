@@ -238,23 +238,26 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     });
   }
 
-  get historyPolyline(): string {
-    if (this.historyData.length < 2) return '';
+  get historyPoints(): { x: number; y: number; value: number }[] {
+    if (this.historyData.length === 0) return [];
     const vals = this.historyData.map(d => Number(d[this.selectedHistoryMetric] ?? 0));
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const range = max - min || 1;
     const width = 600;
     const height = 140;
-    const pad = 12;
+    const pad = 20;
 
-    return vals
-      .map((v, i) => {
-        const x = (i / (vals.length - 1)) * (width - pad * 2) + pad;
-        const y = height - pad - ((v - min) / range) * (height - pad * 2);
-        return `${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(' ');
+    return vals.map((v, i) => {
+      const x = vals.length === 1 ? width / 2 : (i / (vals.length - 1)) * (width - pad * 2) + pad;
+      const y = height - pad - ((v - min) / range) * (height - pad * 2);
+      return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)), value: Number(v.toFixed(2)) };
+    });
+  }
+
+  get historyPolyline(): string {
+    if (this.historyPoints.length < 2) return '';
+    return this.historyPoints.map(p => `${p.x},${p.y}`).join(' ');
   }
 
   get historyUnit(): string {
