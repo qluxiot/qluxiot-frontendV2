@@ -57,6 +57,7 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   private refreshInterval: any;
   historyData: any[] = [];
   selectedHistoryMetric: 'temperature' | 'humidity' | 'pm25' | 'pm10' | 'noise' = 'temperature';
+  selectedHistoryDate: string = new Date().toISOString().split('T')[0];
 
   allPoles: SmartPole[] = [
     {
@@ -230,7 +231,10 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   }
 
   fetchHistory() {
-    this.http.get<any[]>(`${environment.apiUrl}/api/environmental/history?limit=48`).subscribe({
+    const url = this.selectedHistoryDate
+      ? `${environment.apiUrl}/api/environmental/history?date=${this.selectedHistoryDate}`
+      : `${environment.apiUrl}/api/environmental/history?limit=48`;
+    this.http.get<any[]>(url).subscribe({
       next: (data) => {
         this.historyData = data || [];
       },

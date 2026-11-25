@@ -103,14 +103,18 @@
           <div class="panel-header" style="margin-bottom: 16px;">
             <span class="material-symbols-outlined panel-icon">show_chart</span>
             <span class="panel-title">24-Hour Historical Trend (30-min intervals)</span>
-            <select [(ngModel)]="selectedHistoryMetric"
-              style="margin-left: auto; font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: transparent;">
-              <option value="temperature">Temperature (°C)</option>
-              <option value="humidity">Humidity (%)</option>
-              <option value="pm25">PM2.5 (µg/m³)</option>
-              <option value="pm10">PM10 (µg/m³)</option>
-              <option value="noise">Noise (dB)</option>
-            </select>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+              <input type="date" [(ngModel)]="selectedHistoryDate" (ngModelChange)="fetchHistory()"
+                style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: transparent;" />
+              <select [(ngModel)]="selectedHistoryMetric"
+                style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: transparent;">
+                <option value="temperature">Temperature (°C)</option>
+                <option value="humidity">Humidity (%)</option>
+                <option value="pm25">PM2.5 (µg/m³)</option>
+                <option value="pm10">PM10 (µg/m³)</option>
+                <option value="noise">Noise (dB)</option>
+              </select>
+            </div>
           </div>
           <div *ngIf="historyData.length === 0" class="chart-placeholder">
             <span class="material-symbols-outlined chart-placeholder-icon">insert_chart</span>
