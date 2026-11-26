@@ -104,8 +104,18 @@
             <span class="material-symbols-outlined panel-icon">show_chart</span>
             <span class="panel-title">24-Hour Historical Trend (30-min intervals)</span>
             <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-              <input type="date" [(ngModel)]="selectedHistoryDate" (ngModelChange)="fetchHistory()"
-                style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: transparent;" />
+              <div style="display: flex; align-items: center; gap: 4px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 6px; font-size: 12px;">
+                <button (click)="changeHistoryDate(-1)"
+                  style="border: none; background: transparent; cursor: pointer; padding: 2px 6px; font-weight: 600; color: #334155;"
+                  title="Previous day">&lt;</button>
+                <input type="date" [(ngModel)]="selectedHistoryDate" (ngModelChange)="fetchHistory()"
+                  style="font-size: 12px; border: none; background: transparent; outline: none; color: inherit;" />
+                <button (click)="changeHistoryDate(1)" [disabled]="isTodayHistoryDate"
+                  [style.opacity]="isTodayHistoryDate ? '0.35' : '1'"
+                  [style.cursor]="isTodayHistoryDate ? 'not-allowed' : 'pointer'"
+                  style="border: none; background: transparent; padding: 2px 6px; font-weight: 600; color: #334155;"
+                  title="Next day">&gt;</button>
+              </div>
               <select [(ngModel)]="selectedHistoryMetric"
                 style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: transparent;">
                 <option value="temperature">Temperature (°C)</option>
@@ -121,25 +131,61 @@
             <p class="chart-placeholder-text">No historical snapshots yet. Data is saved automatically every 30 minutes.</p>
           </div>
           <div *ngIf="historyData.length > 0" style="padding: 12px 4px;">
-            <svg viewBox="0 0 600 140" style="width: 100%; height: 160px; overflow: visible;">
+            <svg viewBox="0 0 900 140" style="width: 100%; height: auto; overflow: visible;">
+              <defs>
+                <linearGradient id="envAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.25" />
+                  <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.01" />
+                </linearGradient>
+              </defs>
+
+              <!-- Horizontal Grid Lines & Y-Axis Labels -->
+              <line x1="42" y1="18" x2="884" y2="18" stroke="#e2e8f0" stroke-dasharray="3,3" stroke-width="1" />
+              <text x="36" y="21" text-anchor="end" font-size="9" fill="#94a3b8">{{ historyStats.max }}</text>
+
+              <line x1="42" y1="66" x2="884" y2="66" stroke="#e2e8f0" stroke-dasharray="3,3" stroke-width="1" />
+              <text x="36" y="69" text-anchor="end" font-size="9" fill="#94a3b8">{{ historyStats.mid }}</text>
+
+              <line x1="42" y1="114" x2="884" y2="114" stroke="#e2e8f0" stroke-width="1" />
+              <text x="36" y="117" text-anchor="end" font-size="9" fill="#94a3b8">{{ historyStats.min }}</text>
+
+              <!-- Area Fill & Line -->
+              <path *ngIf="historyData.length >= 2" [attr.d]="historyAreaPath" fill="url(#envAreaGrad)" />
               <polyline *ngIf="historyData.length >= 2"
                 [attr.points]="historyPolyline"
                 fill="none"
                 stroke="#0ea5e9"
-                stroke-width="2.5"
+                stroke-width="2.2"
                 stroke-linecap="round"
                 stroke-linejoin="round" />
-              <g *ngFor="let pt of historyPoints">
-                <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="4" fill="#0ea5e9" stroke="#ffffff" stroke-width="1.5" />
-                <text [attr.x]="pt.x" [attr.y]="pt.y - 8" text-anchor="middle" font-size="10" fill="#475569" font-weight="600">
-                  {{ pt.value }}
+
+              <!-- Data Points (Hover/Click for exact value) -->
+              <g *ngFor="let pt of historyPoints"
+                (mouseenter)="hoveredPoint = pt"
+                (mouseleave)="hoveredPoint = null"
+                (click)="hoveredPoint = pt"
+                style="cursor: pointer;">
+                <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="8" fill="transparent" />
+                <circle [attr.cx]="pt.x" [attr.cy]="pt.y"
+                  [attr.r]="hoveredPoint === pt ? 5 : 3"
+                  [attr.fill]="hoveredPoint === pt ? '#0284c7' : '#0ea5e9'"
+                  stroke="#ffffff" stroke-width="1.5" />
+                <text *ngIf="pt.showTime" [attr.x]="pt.x" y="132" text-anchor="middle" font-size="9" fill="#64748b">
+                  {{ pt.time }}
+                </text>
+              </g>
+
+              <!-- Hover Tooltip -->
+              <g *ngIf="hoveredPoint" style="pointer-events: none;">
+                <rect [attr.x]="hoveredPoint.x - 42" [attr.y]="hoveredPoint.y - 32" width="84" height="22" rx="5" fill="#0f172a" opacity="0.92" />
+                <text [attr.x]="hoveredPoint.x" [attr.y]="hoveredPoint.y - 18" text-anchor="middle" font-size="10" fill="#ffffff" font-weight="600">
+                  {{ hoveredPoint.value }} {{ historyUnit }} ({{ hoveredPoint.time }})
                 </text>
               </g>
             </svg>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 4px;">
-              <span>{{ historyData[0]?.recordedAt | date:'shortTime' }}</span>
-              <span>{{ historyData.length }} records (Latest: {{ historyData[historyData.length - 1]?.[selectedHistoryMetric] }} {{ historyUnit }})</span>
-              <span>{{ historyData[historyData.length - 1]?.recordedAt | date:'shortTime' }}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; margin-top: 6px; padding: 0 4px;">
+              <span>Min: <strong>{{ historyStats.min }} {{ historyUnit }}</strong> &bull; Avg: <strong>{{ historyStats.avg }} {{ historyUnit }}</strong> &bull; Max: <strong>{{ historyStats.max }} {{ historyUnit }}</strong></span>
+              <span>{{ historyData.length }} records (Latest: <strong>{{ historyData[historyData.length - 1]?.[selectedHistoryMetric] }} {{ historyUnit }}</strong>)</span>
             </div>
           </div>
         </div>

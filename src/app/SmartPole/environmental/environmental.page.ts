@@ -58,6 +58,7 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
   historyData: any[] = [];
   selectedHistoryMetric: 'temperature' | 'humidity' | 'pm25' | 'pm10' | 'noise' = 'temperature';
   selectedHistoryDate: string = new Date().toISOString().split('T')[0];
+  hoveredPoint: { x: number; y: number; value: number; time: string } | null = null;
 
   allPoles: SmartPole[] = [
     {
@@ -230,6 +231,28 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     return { good: 'Normal', warning: 'Warning', danger: 'Alert' }[status];
   }
 
+  private formatLocalDate(dt: Date): string {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  get isTodayHistoryDate(): boolean {
+    return this.selectedHistoryDate >= this.formatLocalDate(new Date());
+  }
+
+  changeHistoryDate(days: number) {
+    const [y, m, d] = this.selectedHistoryDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d + days);
+    const nextDate = this.formatLocalDate(dt);
+    const today = this.formatLocalDate(new Date());
+    if (nextDate > today) return;
+    this.selectedHistoryDate = nextDate;
+    this.hoveredPoint = null;
+    this.fetchHistory();
+  }
+
   fetchHistory() {
     const url = this.selectedHistoryDate
       ? `${environment.apiUrl}/api/environmental/history?date=${this.selectedHistoryDate}`
@@ -242,20 +265,52 @@ export class EnvironmentalPage implements OnInit, OnDestroy {
     });
   }
 
-  get historyPoints(): { x: number; y: number; value: number }[] {
+  get historyStats(): { min: number; max: number; mid: number; avg: number } {
+    if (this.historyData.length === 0) return { min: 0, max: 0, mid: 0, avg: 0 };
+    const vals = this.historyData.map(d => Number(d[this.selectedHistoryMetric] ?? 0));
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    return {
+      min: Number(min.toFixed(1)),
+      max: Number(max.toFixed(1)),
+      mid: Number(((min + max) / 2).toFixed(1)),
+      avg: Number(avg.toFixed(1)),
+    };
+  }
+
+  get historyAreaPath(): string {
+    if (this.historyPoints.length < 2) return '';
+    const first = this.historyPoints[0];
+    const last = this.historyPoints[this.historyPoints.length - 1];
+    const baseLine = 114;
+    const pts = this.historyPoints.map(p => `${p.x},${p.y}`).join(' L ');
+    return `M ${first.x},${baseLine} L ${pts} L ${last.x},${baseLine} Z`;
+  }
+
+  get historyPoints(): { x: number; y: number; value: number; time: string; showTime: boolean }[] {
     if (this.historyData.length === 0) return [];
     const vals = this.historyData.map(d => Number(d[this.selectedHistoryMetric] ?? 0));
     const min = Math.min(...vals);
     const max = Math.max(...vals);
     const range = max - min || 1;
-    const width = 600;
+    const width = 900;
     const height = 140;
-    const pad = 20;
+    const padLeft = 42;
+    const padRight = 16;
+    const padTop = 18;
+    const padBottom = 26;
+    const step = vals.length > 10 ? Math.ceil(vals.length / 7) : 1;
 
     return vals.map((v, i) => {
-      const x = vals.length === 1 ? width / 2 : (i / (vals.length - 1)) * (width - pad * 2) + pad;
-      const y = height - pad - ((v - min) / range) * (height - pad * 2);
-      return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)), value: Number(v.toFixed(2)) };
+      const x = vals.length === 1 ? (width + padLeft - padRight) / 2 : (i / (vals.length - 1)) * (width - padLeft - padRight) + padLeft;
+      const y = height - padBottom - ((v - min) / range) * (height - padTop - padBottom);
+      const rawDate = String(this.historyData[i].recordedAt || '');
+      const normalizedDate = rawDate && !rawDate.endsWith('Z') && !rawDate.includes('+') ? `${rawDate}Z` : rawDate;
+      const dt = new Date(normalizedDate);
+      const time = isNaN(dt.getTime()) ? '' : dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
+      const showTime = i === 0 || i === vals.length - 1 || i % step === 0;
+      return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)), value: Number(v.toFixed(2)), time, showTime };
     });
   }
 
